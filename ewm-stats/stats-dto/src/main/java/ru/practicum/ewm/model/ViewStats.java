@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ViewStats {
-    private String name;
+    private String app;
     private String uri;
     private long hits;
 }
