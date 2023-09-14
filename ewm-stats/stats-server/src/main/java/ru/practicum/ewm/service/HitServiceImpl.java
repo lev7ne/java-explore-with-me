@@ -2,6 +2,7 @@ package ru.practicum.ewm.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.mapper.EndpointHitDtoMapper;
 import ru.practicum.ewm.model.EndpointHit;
 import ru.practicum.ewm.model.ViewStats;
@@ -20,11 +21,13 @@ public class HitServiceImpl implements HitService {
     }
 
     @Override
+    @Transactional
     public void add(EndpointHit endpointHit) {
         endpointHitRepository.save(EndpointHitDtoMapper.mapToHit(endpointHit));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ViewStats> getAll(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
 
         if (uris == null && !unique) {

@@ -16,7 +16,7 @@ public interface EndpointHitRepository extends JpaRepository<Hit, Long> {
             "from Hit hits " +
             "where hits.timestamp between ?1 and ?2 " +
             "group by hits.app, hits.uri " +
-            "order by COUNT(hits) desc")
+            "order by COUNT(hits.ip) desc")
     List<ViewStats> readAllStats(LocalDateTime start, LocalDateTime end);
 
     @Query("select new ru.practicum.ewm.model.ViewStats(" +
@@ -25,7 +25,7 @@ public interface EndpointHitRepository extends JpaRepository<Hit, Long> {
             "where hits.timestamp between ?1 and ?2 " +
             "and hits.uri in ?3 " +
             "group by hits.app, hits.uri " +
-            "order by COUNT(hits) desc")
+            "order by COUNT(hits.ip) desc")
     List<ViewStats> readStatsWithUris(LocalDateTime start, LocalDateTime end, List<String> uris);
 
     @Query("select new ru.practicum.ewm.model.ViewStats(" +
@@ -33,7 +33,7 @@ public interface EndpointHitRepository extends JpaRepository<Hit, Long> {
             "from Hit hits " +
             "where hits.timestamp between ?1 and ?2 " +
             "group by hits.app, hits.uri " +
-            "order by COUNT(distinct hits) desc ")
+            "order by COUNT(distinct hits.ip) desc ")
     List<ViewStats> readStatsWithUniqueViews(LocalDateTime start, LocalDateTime end);
 
     @Query("select new ru.practicum.ewm.model.ViewStats(" +
@@ -42,7 +42,7 @@ public interface EndpointHitRepository extends JpaRepository<Hit, Long> {
             "where hits.timestamp between ?1 and ?2 " +
             "and hits.uri IN ?3 " +
             "group by hits.app, hits.uri " +
-            "order by COUNT(distinct hits) desc")
+            "order by COUNT(distinct hits.ip) desc")
     List<ViewStats> readStatsWithUrisAndUniqueViews(LocalDateTime start, LocalDateTime end, List<String> uris);
 
 }

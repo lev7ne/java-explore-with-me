@@ -33,13 +33,11 @@ public class StatsClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getAll(LocalDateTime start, LocalDateTime end, Collection<String> uris, Boolean unique) {
-        Map<String, Object> parameters = Map.of(
-                "start", start,
-                "end", end,
-                "uris", uris,
-                "unique", unique
-        );
-        return get(API_PREFIX_STATS + "?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
+
+        String resultUrisString = String.join(",", uris);
+        String resultQuery = String.format("?start={%s}&end={%s}&uris={%s}&unique={%s}", start, end, resultUrisString, unique);
+
+        return get(API_PREFIX_STATS + resultQuery, null);
     }
 
 }
