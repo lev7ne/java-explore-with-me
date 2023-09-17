@@ -3,7 +3,7 @@ package ru.practicum.ewm.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.mapper.EndpointHitDtoMapper;
+import ru.practicum.ewm.mapper.EndpointHitMapper;
 import ru.practicum.ewm.model.EndpointHit;
 import ru.practicum.ewm.model.ViewStats;
 import ru.practicum.ewm.repository.EndpointHitRepository;
@@ -23,7 +23,7 @@ public class HitServiceImpl implements HitService {
     @Override
     @Transactional
     public void add(EndpointHit endpointHit) {
-        endpointHitRepository.save(EndpointHitDtoMapper.mapToHit(endpointHit));
+        endpointHitRepository.save(EndpointHitMapper.mapToHit(endpointHit));
     }
 
     @Override

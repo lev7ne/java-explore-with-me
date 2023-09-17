@@ -10,12 +10,15 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.ewm.model.EndpointHit;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
 @Service
 public class StatsClient extends BaseClient {
     private static final String API_PREFIX_HIT = "/hit";
     private static final String API_PREFIX_STATS = "/stats";
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
     @Autowired
     public StatsClient(@Value("${stats-server.url}") String serverUrl, RestTemplateBuilder builder) {
@@ -32,10 +35,14 @@ public class StatsClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getAll(LocalDateTime start, LocalDateTime end, Collection<String> uris, Boolean unique) {
-
         String resultUrisString = String.join(",", uris);
-        String resultQuery = String.format("?start={%s}&end={%s}&uris={%s}&unique={%s}", start, end, resultUrisString, unique);
-
+        String resultQuery = String.format(
+                "?start={%s}&end={%s}&uris={%s}&unique={%s}",
+                start.format(DATE_TIME_FORMATTER),
+                end.format(DATE_TIME_FORMATTER),
+                resultUrisString,
+                unique
+        );
         return get(API_PREFIX_STATS + resultQuery, null);
     }
 
