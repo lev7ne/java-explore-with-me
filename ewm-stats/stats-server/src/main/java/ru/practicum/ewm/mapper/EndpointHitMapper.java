@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 @UtilityClass
 public class EndpointHitMapper {
-    public DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public Hit mapToHit(EndpointHit endpointHit) {
         return new Hit(
