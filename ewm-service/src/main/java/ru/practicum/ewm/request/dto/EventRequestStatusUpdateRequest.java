@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public class EventRequestStatusUpdateRequest {
     private List<Long> requestIds;
-    private RequestStatus requestStatus;
+    private RequestStatus status;
 
     public enum RequestStatus {
         CONFIRMED, REJECTED

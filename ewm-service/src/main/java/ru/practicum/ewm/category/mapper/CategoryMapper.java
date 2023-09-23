@@ -1,6 +1,7 @@
 package ru.practicum.ewm.category.mapper;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
 import ru.practicum.ewm.category.model.Category;
 
@@ -12,8 +13,8 @@ public class CategoryMapper {
                 .build();
     }
 
-    public NewCategoryDto toCategoryDtoFromCategory(Category category) {
-        return NewCategoryDto.builder()
+    public CategoryDto toCategoryDtoFromCategory(Category category) {
+        return CategoryDto.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .build();

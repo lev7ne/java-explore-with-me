@@ -1,30 +1,32 @@
 package ru.practicum.ewm.event.dto;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class NewEventDto {
-    @NotBlank
+    @NotBlank(message = "The event annotation cannot be empty")
     @Length(min = 20, max = 2000)
     private String annotation;
-    @NotNull
     private Long category;
-    @NotBlank
+    @NotBlank(message = "The event description cannot be empty")
     @Length(min = 20, max = 7000)
     private String description;
-    private LocalDateTime eventDate; // yyyy-MM-dd HH:mm:ss
+    @Future
+    private LocalDateTime eventDate;
     private Location location;
-    private Boolean paid;
-    private Integer participantLimit;
-    private Boolean requestModeration;
-    @NotBlank
+    private Boolean paid = false;
+    private Long participantLimit = 0L;
+    private Boolean requestModeration = true;
+    @NotBlank(message = "The event title cannot be empty")
     @Length(min = 3, max = 120)
     private String title;
 }

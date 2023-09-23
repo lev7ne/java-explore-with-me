@@ -1,7 +1,7 @@
 version: '3.5'
 
 services:
-  ewm-stats-server:
+  stats-server:
     build: ./ewm-stats/stats-server
     image: stats-server-image
     container_name: stats-service-container
@@ -24,7 +24,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
-  ewm-main-service:
+  ewm-service:
     build: ./ewm-service
     image: ewm-service-image
     container_name: ewm-service-container

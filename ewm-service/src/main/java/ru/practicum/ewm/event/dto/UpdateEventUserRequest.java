@@ -14,10 +14,10 @@ public class UpdateEventUserRequest {
     private Long category;
     @Length(min = 20, max = 7000)
     private String description;
-    private LocalDateTime eventDate; // yyyy-MM-dd HH:mm:ss
+    private LocalDateTime eventDate;
     private Location location;
     private Boolean paid;
-    private Integer participantLimit;
+    private Long participantLimit;
     private Boolean requestModeration;
     private StateAction stateAction;
     @Length(min = 3, max = 120)

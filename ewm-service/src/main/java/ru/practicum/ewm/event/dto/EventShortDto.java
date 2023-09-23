@@ -2,7 +2,7 @@ package ru.practicum.ewm.event.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.ewm.category.dto.NewCategoryDto;
+import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 @Builder
 public class EventShortDto {
     private String annotation;
-    private NewCategoryDto category;
-    private Integer confirmedRequests;
-    private LocalDateTime eventDate; // yyyy-MM-dd HH:mm:ss
+    private CategoryDto category;
+    private Long confirmedRequests;
+    private LocalDateTime eventDate;
     private Long id;
     private UserShortDto initiator;
     private Boolean paid;

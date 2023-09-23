@@ -1,36 +1,36 @@
 package ru.practicum.ewm.category.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.dto.NewCategoryDto;
-import ru.practicum.ewm.category.service.CategoryService;
+import ru.practicum.ewm.category.service.CategoryAdminService;
 
 import javax.validation.Valid;
 
 @RestController
 @RequestMapping(value = "/admin/categories")
+@RequiredArgsConstructor
 public class CategoryAdminController {
-    private final CategoryService categoryService;
-
-    public CategoryAdminController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
+    private final CategoryAdminService categoryAdminService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public NewCategoryDto create(@Valid @RequestBody NewCategoryDto newCategoryDto) {
-        return categoryService.save(newCategoryDto);
+    public CategoryDto create(@Valid @RequestBody NewCategoryDto newCategoryDto) {
+        return categoryAdminService.create(newCategoryDto);
     }
 
     @PatchMapping(value = "/{catId}")
-    public NewCategoryDto update(@Valid @RequestBody NewCategoryDto newCategoryDto,
-                                 @PathVariable Long catId) {
-        return categoryService.update(newCategoryDto, catId);
+    @ResponseStatus(HttpStatus.OK)
+    public CategoryDto update(@Valid @RequestBody NewCategoryDto newCategoryDto,
+                                      @PathVariable Long catId) {
+        return categoryAdminService.update(newCategoryDto, catId);
     }
 
     @DeleteMapping(value = "/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@PathVariable Long catId) {
-        categoryService.deleteById(catId);
+    public void delete(@PathVariable Long catId) {
+        categoryAdminService.delete(catId);
     }
 }
