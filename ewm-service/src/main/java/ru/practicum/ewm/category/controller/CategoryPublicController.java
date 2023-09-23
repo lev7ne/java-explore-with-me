@@ -23,7 +23,7 @@ public class CategoryPublicController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<CategoryDto> getAll(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                              @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                    @RequestParam(defaultValue = "10") @Positive Integer size) {
         Pageable pageable = PageRequest.of(from / size, size);
         return categoryPublicService.getAll(pageable);
     }

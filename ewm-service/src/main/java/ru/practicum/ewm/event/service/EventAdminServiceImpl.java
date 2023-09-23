@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class EventAdminServiceImpl implements EventAdminService{
+public class EventAdminServiceImpl implements EventAdminService {
     private final EventRepository eventRepository;
 
     /**

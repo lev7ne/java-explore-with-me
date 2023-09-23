@@ -21,6 +21,7 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
 
     /**
      * Endpoint: GET "/compilations"
+     *
      * @param pinned
      * @param pageable
      * @return List<CompilationDto>

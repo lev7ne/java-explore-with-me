@@ -37,8 +37,8 @@ public class UserAdminController {
 
     @GetMapping
     public List<UserDto> getAllByIds(@RequestParam @Nullable List<Long> ids,
-                                       @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                       @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                     @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                     @RequestParam(defaultValue = "10") @Positive Integer size) {
         Pageable pageable = PageRequest.of(from / size, size);
         return userAdminService.getAllByIds(ids, pageable);
     }

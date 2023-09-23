@@ -12,11 +12,11 @@ public interface EventPublicService {
     EventFullDto getById(Long eventId, HttpServletRequest request);
 
     List<EventShortDto> getAllWithParam(String text,
-                                     List<Long> categories,
-                                     Boolean paid,
-                                     LocalDateTime rangeStart,
-                                     LocalDateTime rangeEnd,
-                                     Boolean onlyAvailable,
-                                     Pageable pageable,
-                                     HttpServletRequest request);
+                                        List<Long> categories,
+                                        Boolean paid,
+                                        LocalDateTime rangeStart,
+                                        LocalDateTime rangeEnd,
+                                        Boolean onlyAvailable,
+                                        Pageable pageable,
+                                        HttpServletRequest request);
 }

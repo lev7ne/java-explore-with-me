@@ -24,18 +24,6 @@ import java.util.stream.Collectors;
 public class MainServiceExceptionHandler {
 //    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ApiError {
-        private HttpStatus status;
-        private String reason;
-        private String message;
-        @Builder.Default
-        private LocalDateTime timestamp = LocalDateTime.now();
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
@@ -50,7 +38,6 @@ public class MainServiceExceptionHandler {
                 errors,
                 LocalDateTime.now());
     }
-
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -124,5 +111,17 @@ public class MainServiceExceptionHandler {
                 .reason("Internal server error")
                 .message(ex.getMessage())
                 .build();
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ApiError {
+        private HttpStatus status;
+        private String reason;
+        private String message;
+        @Builder.Default
+        private LocalDateTime timestamp = LocalDateTime.now();
     }
 }

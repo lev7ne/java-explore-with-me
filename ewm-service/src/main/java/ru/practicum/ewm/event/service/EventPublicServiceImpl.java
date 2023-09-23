@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class EventPublicServiceImpl implements EventPublicService{
+public class EventPublicServiceImpl implements EventPublicService {
     private final EventRepository eventRepository;
     private final StatsClient statsClient;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -96,13 +96,13 @@ public class EventPublicServiceImpl implements EventPublicService{
     @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> getAllWithParam(String text,
-                                            List<Long> categories,
-                                            Boolean paid,
-                                            LocalDateTime rangeStart,
-                                            LocalDateTime rangeEnd,
-                                            Boolean onlyAvailable,
-                                            Pageable pageable,
-                                            HttpServletRequest request) {
+                                               List<Long> categories,
+                                               Boolean paid,
+                                               LocalDateTime rangeStart,
+                                               LocalDateTime rangeEnd,
+                                               Boolean onlyAvailable,
+                                               Pageable pageable,
+                                               HttpServletRequest request) {
 
         List<Event> events = eventRepository.getAllWithParam(
                 text,

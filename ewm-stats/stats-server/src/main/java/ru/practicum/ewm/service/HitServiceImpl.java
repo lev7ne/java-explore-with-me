@@ -19,8 +19,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class HitServiceImpl implements HitService {
-    private final EndpointHitRepository endpointHitRepository;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final EndpointHitRepository endpointHitRepository;
 
     @Override
     @Transactional

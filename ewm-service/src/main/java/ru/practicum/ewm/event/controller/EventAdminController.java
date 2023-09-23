@@ -23,8 +23,8 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 public class EventAdminController {
-    private final EventAdminService eventAdminService;
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private final EventAdminService eventAdminService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
