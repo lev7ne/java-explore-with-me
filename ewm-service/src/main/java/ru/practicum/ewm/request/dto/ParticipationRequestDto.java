@@ -2,7 +2,7 @@ package ru.practicum.ewm.request.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.ewm.request.entity.Request;
+import ru.practicum.ewm.request.model.Request;
 
 import java.time.LocalDateTime;
 

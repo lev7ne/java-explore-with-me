@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 public class EventFullDto {
     private String annotation;
     private CategoryDto category;
-    private Long confirmedRequests;
     private LocalDateTime createdOn;
     private String description;
     private LocalDateTime eventDate;
@@ -26,6 +25,8 @@ public class EventFullDto {
     private Boolean requestModeration;
     private Event.State state;
     private String title;
+    @Builder.Default
+    private Long confirmedRequests = 0L;
     @Builder.Default
     private Long views = 0L;
 }

@@ -4,20 +4,29 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.StatsClient;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.mapper.CompilationMapper;
 import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
+import ru.practicum.ewm.event.dto.EventShortDto;
+import ru.practicum.ewm.event.mapper.EventMapper;
+import ru.practicum.ewm.event.model.Event;
+import ru.practicum.ewm.request.repository.RequestRepository;
+import ru.practicum.ewm.util.helper.ObjectCounter;
 import ru.practicum.ewm.util.helper.ObjectFinder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CompilationPublicServiceImpl implements CompilationPublicService {
     private final CompilationRepository compilationRepository;
+    private final RequestRepository requestRepository;
+    private final StatsClient statsClient;
 
     /**
      * Endpoint: GET "/compilations"
@@ -42,7 +51,26 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
         }
 
         return compilations.stream()
-                .map(CompilationMapper::toCompilationDtoFromCompilation)
+                .map(compilation -> {
+                    List<Long> eventIds = compilation.getEvents().stream()
+                            .map(Event::getId)
+                            .collect(Collectors.toList());
+
+                    Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
+                    Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
+
+                    List<EventShortDto> eventShortDtos = compilation.getEvents().stream()
+                            .map(EventMapper::toEventShortDtoFromEvent)
+                            .map(eventShortDto -> {
+                                eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
+                                eventShortDto.setViews(countViews.get(eventShortDto.getId()));
+                                return eventShortDto;
+                            })
+                            .collect(Collectors.toList());
+                    CompilationDto compilationDto = CompilationMapper.toCompilationDtoFromCompilation(compilation);
+                    compilationDto.setEvents(eventShortDtos);
+                    return compilationDto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -55,6 +83,25 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
     @Override
     @Transactional(readOnly = true)
     public CompilationDto getById(Long compId) {
-        return CompilationMapper.toCompilationDtoFromCompilation(ObjectFinder.findCompilationById(compilationRepository, compId));
+        Compilation compilation = ObjectFinder.findCompilationById(compilationRepository, compId);
+        List<Long> eventIds = compilation.getEvents().stream()
+                .map(Event::getId)
+                .collect(Collectors.toList());
+        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
+        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
+
+        CompilationDto compilationDto = CompilationMapper.toCompilationDtoFromCompilation(compilation);
+
+        List<EventShortDto> eventShortDtos = compilation.getEvents().stream()
+                .map(EventMapper::toEventShortDtoFromEvent)
+                .peek(eventShortDto -> {
+                    eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
+                    eventShortDto.setViews(countViews.get(eventShortDto.getId()));
+                })
+                .collect(Collectors.toList());
+
+        compilationDto.setEvents(eventShortDtos);
+
+        return compilationDto;
     }
 }

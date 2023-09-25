@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 
 @UtilityClass
 public class EventDateValidator {
-    public static void eventDateValidation(LocalDateTime eventDate) {
-        if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
+    public static void isDateIsNotBefore(LocalDateTime eventDate, int hours) {
+        if (eventDate.isBefore(LocalDateTime.now().plusHours(hours))) {
             throw new InvalidRequestException("Cannot create the event because event date cannot be earlier " +
                     "than two hours after current moment");
         }

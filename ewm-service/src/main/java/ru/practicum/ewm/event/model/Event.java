@@ -50,10 +50,6 @@ public class Event {
     @Column(name = "state")
     @Enumerated(EnumType.STRING)
     private State state;
-    @Column(name = "confirmed_requests")
-    private Long confirmedRequests;
-    @Column(name = "views")
-    private Long views;
 
     public enum State {
         PENDING, PUBLISHED, CANCELED

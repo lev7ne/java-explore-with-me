@@ -36,7 +36,7 @@ public class StatsClient {
         Map<String, Object> parameters = Map.of(
                 "start", encodeValue(start),
                 "end", encodeValue(end),
-                "uris", uris.toArray(),
+                "uris", String.join(",", uris),
                 "unique", unique);
 
         ResponseEntity<List<ViewStats>> response = rest

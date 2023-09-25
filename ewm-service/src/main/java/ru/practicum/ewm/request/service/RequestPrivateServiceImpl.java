@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
-import ru.practicum.ewm.request.entity.Request;
 import ru.practicum.ewm.request.mapper.RequestMapper;
+import ru.practicum.ewm.request.model.Request;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
@@ -48,8 +48,10 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
             throw new ConditionMismatchException("The event must be published");
         }
 
+        Long count = requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
+
         if (event.getParticipantLimit() != 0) {
-            if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+            if (count >= event.getParticipantLimit()) {
                 throw new ConditionMismatchException("The participant limit has been reached");
             }
         }
@@ -69,8 +71,6 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
 
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             request.setRequestStatus(Request.RequestStatus.CONFIRMED);
-            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-            eventRepository.save(event);
         }
 
         return RequestMapper.toParticipationRequestDtoFromRequest(requestRepository.save(request));
@@ -108,9 +108,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
     @Override
     @Transactional
     public ParticipationRequestDto cancel(Long requesterId, Long requestId) {
-        log.info(requesterId + " / " + requestId);
         Request canceledRequest = ObjectFinder.findRequestById(requestRepository, requestId);
-        log.info("Найденный реквест" + canceledRequest);
         canceledRequest.setRequestStatus(Request.RequestStatus.CANCELED);
 
         return RequestMapper.toParticipationRequestDtoFromRequest(requestRepository.save(canceledRequest));

@@ -39,8 +39,6 @@ CREATE TABLE events
     create_date        TIMESTAMP WITHOUT TIME ZONE,
     published_on       TIMESTAMP WITHOUT TIME ZONE,
     state              VARCHAR(40)                             NOT NULL,
-    confirmed_requests BIGINT                                  NOT NULL,
-    views              BIGINT                                  NOT NULL,
     CONSTRAINT pk_event_id PRIMARY KEY (id),
     CONSTRAINT fk_cat_id_in_event FOREIGN KEY (category_id) REFERENCES categories (id),
     CONSTRAINT fk_user_id_in_event FOREIGN KEY (initiator_id) REFERENCES users (id)
@@ -63,7 +61,8 @@ CREATE TABLE requests
     request_status VARCHAR(40)                             NOT NULL,
     CONSTRAINT pk_request_id PRIMARY KEY (id),
     CONSTRAINT fk_requester_id_in_request FOREIGN KEY (requester_id) REFERENCES users (id),
-    CONSTRAINT fk_event_id_in_request FOREIGN KEY (event_id) REFERENCES events (id)
+    CONSTRAINT fk_event_id_in_request FOREIGN KEY (event_id) REFERENCES events (id),
+    CONSTRAINT unique_pair_requester_id_event_id UNIQUE (requester_id, event_id)
 );
 
 CREATE TABLE events_compilations
@@ -72,8 +71,7 @@ CREATE TABLE events_compilations
     compilation_id BIGINT NOT NULL,
     CONSTRAINT pk_events_compilations PRIMARY KEY (event_id, compilation_id),
     CONSTRAINT fk_ec_to_events FOREIGN KEY (event_id) REFERENCES events (id),
-    CONSTRAINT fk_ec_to_compilations FOREIGN KEY (compilation_id) REFERENCES compilations (id),
-    CONSTRAINT uq_events_in_compilation UNIQUE (event_id, compilation_id)
+    CONSTRAINT fk_ec_to_compilations FOREIGN KEY (compilation_id) REFERENCES compilations (id)
 );
 
 

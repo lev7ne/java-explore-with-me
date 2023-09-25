@@ -4,25 +4,32 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.StatsClient;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
+import ru.practicum.ewm.request.model.Request;
+import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.util.exception.InvalidRequestException;
 import ru.practicum.ewm.util.exception.ValidationException;
+import ru.practicum.ewm.util.helper.ObjectCounter;
 import ru.practicum.ewm.util.helper.ObjectFinder;
 import ru.practicum.ewm.util.helper.ObjectMerger;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class EventAdminServiceImpl implements EventAdminService {
     private final EventRepository eventRepository;
+    private final RequestRepository requestRepository;
+    private final StatsClient statsClient;
 
     /**
      * EventAdminController method; endpoint: PATCH "/admin/events/{eventId}"
@@ -72,7 +79,12 @@ public class EventAdminServiceImpl implements EventAdminService {
 
         ObjectMerger.copyProperties(updateEventAdminRequest, updatedEvent);
 
-        return EventMapper.toEventFullDtoFromEvent(eventRepository.save(updatedEvent));
+        EventFullDto eventFullDto = EventMapper.toEventFullDtoFromEvent(eventRepository.save(updatedEvent));
+
+        eventFullDto.setViews(ObjectCounter.countViewsById(eventId, statsClient));
+        eventFullDto.setConfirmedRequests(requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED));
+
+        return eventFullDto;
     }
 
     /**
@@ -110,8 +122,20 @@ public class EventAdminServiceImpl implements EventAdminService {
             return new ArrayList<>();
         }
 
+        List<Long> eventIds = events.stream()
+                .map(Event::getId)
+                .collect(Collectors.toList());
+
+        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
+        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
+
         return events.stream()
                 .map(EventMapper::toEventFullDtoFromEvent)
+                .peek(eventShortDto -> {
+                    eventShortDto.setViews(countViews.getOrDefault(eventShortDto.getId(), 0L));
+                    eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(eventShortDto.getId(), 0L));
+                })
                 .collect(Collectors.toList());
+
     }
 }

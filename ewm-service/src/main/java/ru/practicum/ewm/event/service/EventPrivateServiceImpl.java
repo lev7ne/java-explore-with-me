@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.StatsClient;
 import ru.practicum.ewm.category.repository.CategoryRepository;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
@@ -16,17 +17,19 @@ import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
-import ru.practicum.ewm.request.entity.Request;
 import ru.practicum.ewm.request.mapper.RequestMapper;
+import ru.practicum.ewm.request.model.Request;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.repository.UserRepository;
 import ru.practicum.ewm.util.exception.ConditionMismatchException;
+import ru.practicum.ewm.util.helper.ObjectCounter;
 import ru.practicum.ewm.util.helper.ObjectFinder;
 import ru.practicum.ewm.util.helper.ObjectMerger;
 import ru.practicum.ewm.util.validator.EventDateValidator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +40,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
+    private final StatsClient statsClient;
 
     /**
      * Endpoint: POST "/users/{userId}/events"
@@ -48,8 +52,9 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     @Override
     @Transactional
     public EventFullDto create(NewEventDto newEventDto, Long userId) {
-        EventDateValidator.eventDateValidation(newEventDto.getEventDate());
+        EventDateValidator.isDateIsNotBefore(newEventDto.getEventDate(), 2);
         Event anyEvent = EventMapper.toEventFromNewEventDto(newEventDto);
+
         anyEvent.setInitiator(ObjectFinder.findUserById(userRepository, userId));
         anyEvent.setCategory(ObjectFinder.findCategoryById(categoryRepository, newEventDto.getCategory()));
 
@@ -67,7 +72,13 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     @Transactional(readOnly = true)
     public EventFullDto getById(Long userId, Long eventId) {
         Event event = ObjectFinder.findEventById(eventRepository, eventId);
-        return EventMapper.toEventFullDtoFromEvent(event);
+
+        EventFullDto eventFullDto = EventMapper.toEventFullDtoFromEvent(event);
+
+        eventFullDto.setViews(ObjectCounter.countViewsById(eventId, statsClient));
+        eventFullDto.setConfirmedRequests(requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED));
+
+        return eventFullDto;
     }
 
     /**
@@ -84,7 +95,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         Event updatedEvent = ObjectFinder.findEventById(eventRepository, eventId);
 
         if (updateEventUserRequest.getEventDate() != null) {
-            EventDateValidator.eventDateValidation(updateEventUserRequest.getEventDate());
+            EventDateValidator.isDateIsNotBefore(updateEventUserRequest.getEventDate(), 2);
         }
 
         if (updatedEvent.getState() == Event.State.PUBLISHED) {
@@ -101,7 +112,14 @@ public class EventPrivateServiceImpl implements EventPrivateService {
 
         ObjectMerger.copyProperties(updatedEvent, updateEventUserRequest);
 
-        return EventMapper.toEventFullDtoFromEvent(eventRepository.save(updatedEvent));
+        eventRepository.save(updatedEvent);
+
+        EventFullDto eventFullDto = EventMapper.toEventFullDtoFromEvent(updatedEvent);
+
+        eventFullDto.setViews(ObjectCounter.countViewsById(eventId, statsClient));
+        eventFullDto.setConfirmedRequests(requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED));
+
+        return eventFullDto;
     }
 
     /**
@@ -120,8 +138,22 @@ public class EventPrivateServiceImpl implements EventPrivateService {
             return new ArrayList<>();
         }
 
+        List<Long> eventIds = events.stream()
+                .map(Event::getId)
+                .collect(Collectors.toList());
+
+        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
+
+        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
+
+
+
         return events.stream()
                 .map(EventMapper::toEventShortDtoFromEvent)
+                .peek(eventShortDto -> {
+                    eventShortDto.setViews(countViews.get(eventShortDto.getId()));
+                    eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
+                })
                 .collect(Collectors.toList());
     }
 
@@ -137,16 +169,18 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
         // FIXME: метод выгружает лишнюю информацию из БД, а по двум параметрам найти не получается
-        List<Request> requests2 = requestRepository.getAllByEvent_Id(eventId)
-                .stream()
-                .filter(request -> request.getEvent().getInitiator().getId().equals(userId))
-                .collect(Collectors.toList());
+//        List<Request> requests2 = requestRepository.getAllByEvent_Id(eventId)
+//                .stream()
+//                .filter(request -> request.getEvent().getInitiator().getId().equals(userId))
+//                .collect(Collectors.toList());
 
-        if (requests2.isEmpty()) {
+        List<Request> requests = requestRepository.getByEventIdAndInitiatorId(eventId, userId);
+
+        if (requests.isEmpty()) {
             return new ArrayList<>();
         }
 
-        return requests2.stream()
+        return requests.stream()
                 .map(RequestMapper::toParticipationRequestDtoFromRequest)
                 .collect(Collectors.toList());
     }
@@ -185,6 +219,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                     .collect(Collectors.toList());
         }
 
+        Long count = requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
+
         if (eventRequestStatusUpdateRequest.getStatus().toString().equals(Request.RequestStatus.CONFIRMED.toString())) {
             if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
                 confirmedRequests = requestsToUpdate.stream()
@@ -194,12 +230,12 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                             return RequestMapper.toParticipationRequestDtoFromRequest(request);
                         })
                         .collect(Collectors.toList());
-            } else if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+            } else if (count >= event.getParticipantLimit()) {
                 throw new ConditionMismatchException("The participant limit has been reached");
             }
 
             for (Request request : requestsToUpdate) {
-                if (event.getConfirmedRequests() < event.getParticipantLimit()) {
+                if (count < event.getParticipantLimit()) {
                     request.setRequestStatus(Request.RequestStatus.CONFIRMED);
                     confirmedRequests.add(RequestMapper.toParticipationRequestDtoFromRequest(request));
                 } else {
@@ -207,11 +243,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                     rejectedRequests.add(RequestMapper.toParticipationRequestDtoFromRequest(request));
                 }
                 requestRepository.save(request);
-                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             }
         }
-
-        eventRepository.save(event);
 
         return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
     }

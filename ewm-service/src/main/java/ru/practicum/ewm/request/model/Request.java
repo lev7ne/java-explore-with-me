@@ -1,4 +1,4 @@
-package ru.practicum.ewm.request.entity;
+package ru.practicum.ewm.request.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
