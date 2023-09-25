@@ -61,6 +61,7 @@ public class ObjectCounter {
         );
 
         return stats.stream()
+                .filter(stat -> isValidUri(stat.getUri()))
                 .collect(Collectors.toMap(
                         stat -> extractEventId(stat.getUri()),
                         ViewStats::getHits,
@@ -80,7 +81,17 @@ public class ObjectCounter {
     }
 
     /**
+     * URL validation method
      *
+     * @param uri
+     * @return boolean isValidUri
+     */
+    private boolean isValidUri(String uri) {
+        String[] parts = uri.split("/");
+        return parts.length >= 3;
+    }
+
+    /**
      * @param eventIds
      * @param repository
      * @return Map<Long, Long> countConfirmedRequestByIds

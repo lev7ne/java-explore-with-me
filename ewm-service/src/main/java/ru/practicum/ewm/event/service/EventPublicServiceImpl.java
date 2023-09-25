@@ -140,6 +140,15 @@ public class EventPublicServiceImpl implements EventPublicService {
             return new ArrayList<>();
         }
 
+        statsClient.add(
+                new EndpointHit(
+                        "ewm-main-service",
+                        httpServletRequest.getRequestURI(),
+                        httpServletRequest.getRemoteAddr(),
+                        LocalDateTime.now().format(formatter)
+                )
+        );
+
         Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
 
         return events.stream()
