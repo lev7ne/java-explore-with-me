@@ -46,7 +46,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         Compilation compilation = CompilationMapper.toCompilationFromNewCompilationDto(newCompilationDto);
 
         List<Event> events = newCompilationDto.getEvents().isEmpty() ?
-                        new ArrayList<>() : eventRepository.getEventsByIdIn(newCompilationDto.getEvents());
+                new ArrayList<>() : eventRepository.getEventsByIdIn(newCompilationDto.getEvents());
 
         if (events.isEmpty()) {
             return CompilationMapper.toCompilationDtoFromCompilation(compilationRepository.save(compilation));
@@ -61,7 +61,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
         Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
 
-        List <EventShortDto> eventShortDtos = events.stream()
+        List<EventShortDto> eventShortDtos = events.stream()
                 .map(EventMapper::toEventShortDtoFromEvent)
                 .peek(eventShortDto -> {
                     eventShortDto.setViews(countViews.get(eventShortDto.getId()));
@@ -118,7 +118,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
         Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
 
-        List <EventShortDto> eventShortDtos = events.stream()
+        List<EventShortDto> eventShortDtos = events.stream()
                 .map(EventMapper::toEventShortDtoFromEvent)
                 .peek(eventShortDto -> {
                     eventShortDto.setViews(countViews.getOrDefault(eventShortDto.getId(), 0L));
