@@ -9,6 +9,8 @@ import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.request.model.Request;
 import ru.practicum.ewm.request.repository.RequestRepository;
+import ru.practicum.ewm.subscription.model.Subscription;
+import ru.practicum.ewm.subscription.repository.SubscriptionRepository;
 import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 import ru.practicum.ewm.util.exception.NotFoundException;
@@ -38,5 +40,10 @@ public class ObjectFinder {
     public Request findRequestById(RequestRepository repository, long requestId) {
         return repository.findById(requestId).orElseThrow(() ->
                 new NotFoundException("Request with id=" + requestId + " was not found"));
+    }
+
+    public Subscription findSubscriptionById(SubscriptionRepository repository, long subsId) {
+        return repository.findById(subsId).orElseThrow(() ->
+                new NotFoundException("Request with id=" + subsId + " was not found"));
     }
 }
