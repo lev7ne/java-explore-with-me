@@ -1,42 +1,52 @@
 package ru.practicum.ewm;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.client.RestTemplate;
 import ru.practicum.ewm.model.EndpointHit;
+import ru.practicum.ewm.model.ViewStats;
 
-import java.time.LocalDateTime;
-import java.util.Collection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 @Service
-public class StatsClient extends BaseClient {
-    private static final String API_PREFIX_HIT = "/hit";
-    private static final String API_PREFIX_STATS = "/stats";
+public class StatsClient {
+    private final RestTemplate rest;
+    private final String serverUrl;
 
-    @Autowired
-    public StatsClient(@Value("${stats-server.url}") String serverUrl, RestTemplateBuilder builder) {
-        super(
-                builder
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
-                        .requestFactory(HttpComponentsClientHttpRequestFactory::new)
-                        .build()
-        );
+    public StatsClient(@Value("${stats-server.url}") String serverUrl) {
+        this.rest = new RestTemplate();
+        this.serverUrl = serverUrl;
     }
 
-    public ResponseEntity<Object> add(EndpointHit endpointHit) {
-        return post(API_PREFIX_HIT, endpointHit);
+    public void add(EndpointHit endpointHit) {
+        rest.exchange(serverUrl + "/hit",
+                HttpMethod.POST,
+                new HttpEntity<>(endpointHit),
+                Object.class);
     }
 
-    public ResponseEntity<Object> getAll(LocalDateTime start, LocalDateTime end, Collection<String> uris, Boolean unique) {
+    public List<ViewStats> getAll(String start, String end, List<String> uris, Boolean unique) {
+        Map<String, Object> parameters = Map.of(
+                "start", encodeValue(start),
+                "end", encodeValue(end),
+                "uris", String.join(",", uris),
+                "unique", unique);
 
-        String resultUrisString = String.join(",", uris);
-        String resultQuery = String.format("?start={%s}&end={%s}&uris={%s}&unique={%s}", start, end, resultUrisString, unique);
-
-        return get(API_PREFIX_STATS + resultQuery, null);
+        ResponseEntity<List<ViewStats>> response = rest
+                .exchange(serverUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}",
+                        HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+                        }, parameters);
+        return response.getBody();
     }
 
+    private String encodeValue(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
 }
