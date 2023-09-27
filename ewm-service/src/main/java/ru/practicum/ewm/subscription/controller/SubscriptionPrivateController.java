@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.subscription.service.SubscriptionService;
+import ru.practicum.ewm.user.dto.UserDtoWithEvents;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import javax.validation.constraints.Positive;
@@ -22,7 +23,7 @@ public class SubscriptionPrivateController {
 
     /**
      * Пользователь с userId подписывается на пользователя subscribedUserId,
-     * возвращает список всех пользователей на которых подписан subscriberId, включая нового "отслеживаемого" пользователя userId
+     * возвращает список всех пользователей на которых подписан userId, включая нового "отслеживаемого" пользователя subscribedUserId
      *
      * @param userId
      * @param subscribedUserId
@@ -36,32 +37,32 @@ public class SubscriptionPrivateController {
     }
 
     /**
-     * Пользователь с subscriberId отписывается от пользователя userId
+     * Пользователь с userId отписывается от пользователя subscribedUserId
      *
      * @param userId
-     * @param subscriberId
+     * @param subscribedUserId
      * @return List<UserShortDto>
      */
-    @DeleteMapping(value = "/subscriptions/{subscriberId}")
+    @DeleteMapping(value = "/subscriptions/{subscribedUserId}")
     @ResponseStatus(HttpStatus.OK)
     public List<UserShortDto> unsubscribe(@PathVariable Long userId,
-                                          @PathVariable Long subscriberId) {
-        return subscriptionService.unsubscribe(userId, subscriberId);
+                                          @PathVariable Long subscribedUserId) {
+        return subscriptionService.unsubscribe(userId, subscribedUserId);
     }
 
     /**
-     * Возвращает всех пользователей на которых подписан пользователь с userId
+     * Возвращает всех пользователей для userId с взаимной подпиской, вместе с опубликованными ими событиями
      *
      * @param userId
      * @param from
      * @param size
-     * @return List<UserShortDto>
+     * @return List<UserDtoWithEvents>
      */
-    @GetMapping(value = "/subscriptions/all")
+    @GetMapping(value = "/subscriptions")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserShortDto> getAll(@PathVariable Long userId,
-                                     @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                     @RequestParam(defaultValue = "10") @Positive Integer size) {
+    public List<UserDtoWithEvents> getAll(@PathVariable Long userId,
+                                          @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                          @RequestParam(defaultValue = "10") @Positive Integer size) {
         Pageable pageable = PageRequest.of(from / size, size);
         return subscriptionService.getAll(userId, pageable);
     }
@@ -72,9 +73,8 @@ public class SubscriptionPrivateController {
      * @param userId
      */
     @DeleteMapping(value = "/subscriptions/unsubscribe/all")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void unfollowEveryone(@PathVariable Long userId) {
         subscriptionService.unfollowEveryone(userId);
     }
-
 }

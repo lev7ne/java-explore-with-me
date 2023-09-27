@@ -12,7 +12,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 
     void deleteByUserIdAndAndSubscribedUserId(Long userId, Long subscribedUserId);
 
-    List<Subscription> getAllByUserId(Long anyId);
+    List<Subscription> getAllByUserIdAndMutualSubscription(Long anyId, Boolean mutualSubscription);
+
+    List<Subscription> getAllByUserId(Long anyIdn);
+
     List<Subscription> getAllBySubscribedUserId(Long anyId);
 
     void deleteAllByUserId(Long userId);
