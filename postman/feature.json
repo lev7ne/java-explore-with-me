@@ -164,11 +164,11 @@
 					"variable": [
 						{
 							"key": "userId",
-							"value": ""
+							"value": "{{uid}}"
 						},
 						{
 							"key": "subscribedUserId",
-							"value": ""
+							"value": "{{sid}}"
 						}
 					]
 				}
