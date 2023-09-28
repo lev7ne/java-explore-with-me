@@ -25,8 +25,8 @@ public class SubscriptionPrivateController {
      * Пользователь с userId подписывается на пользователя subscribedUserId,
      * возвращает список всех пользователей на которых подписан userId, включая нового "отслеживаемого" пользователя subscribedUserId
      *
-     * @param userId
-     * @param subscribedUserId
+     * @param userId основной пользователь, автор запроса
+     * @param subscribedUserId пользователь на которого будет осуществлена подписка
      * @return List<UserShortDto>
      */
     @PostMapping(path = "/subscriptions/{subscribedUserId}")
@@ -39,8 +39,8 @@ public class SubscriptionPrivateController {
     /**
      * Пользователь с userId отписывается от пользователя subscribedUserId
      *
-     * @param userId
-     * @param subscribedUserId
+     * @param userId основной пользователь, автор запроса
+     * @param subscribedUserId пользователь, подписка на которого будет отменена
      * @return List<UserShortDto>
      */
     @DeleteMapping(value = "/subscriptions/{subscribedUserId}")
@@ -53,9 +53,7 @@ public class SubscriptionPrivateController {
     /**
      * Возвращает всех пользователей для userId с взаимной подпиской, вместе с опубликованными ими событиями
      *
-     * @param userId
-     * @param from
-     * @param size
+     * @param userId пользователь, для которого будут найдены все взаимные подписчики
      * @return List<UserDtoWithEvents>
      */
     @GetMapping(value = "/subscriptions")
@@ -70,7 +68,7 @@ public class SubscriptionPrivateController {
     /**
      * Пользователь с userId отменяет подписки на всех пользователей
      *
-     * @param userId
+     * @param userId пользователь, который будет отписываться от всех других пользователей
      */
     @DeleteMapping(value = "/subscriptions/unsubscribe/all")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -40,8 +40,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     /**
      * Endpoint: POST "/users/{userId}/subscribers/{subscribedUserId}"
      *
-     * @param userId
-     * @param subscribedUserId
+     * @param userId основной пользователь, автор запроса
+     * @param subscribedUserId пользователь на которого будет осуществлена подписка
      * @return List<UserShortDto>
      */
     @Override
@@ -75,8 +75,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     /**
      * Endpoint: DELETE "/users/{userId}/subscribers/{subscribedUserId}"
      *
-     * @param userId
-     * @param subscriberId
+     * @param userId основной пользователь, автор запроса
+     * @param subscriberId пользователь, подписка на которого будет отменена
      * @return List<UserShortDto>
      */
     @Override
@@ -104,7 +104,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     /**
      * Endpoint: GET "/users/{userId}/subscriptions"
      *
-     * @param userId
+     * @param userId пользователь, для которого будут найдены все взаимные подписчики
      * @return List<UserDtoWithEvents>
      */
     @Override
@@ -135,6 +135,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                             .build();
 
                     List<Event> events = eventsGroupingByInitiatorId.get(user.getId());
+                    if (events == null) {
+                        return userDtoWithEvents;
+                    }
+
                     events.forEach(event -> {
                         EventShortDto eventShortDto = EventMapper.toEventShortDtoFromEvent(event);
                         eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L));
@@ -150,7 +154,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     /**
      * helper method for collection List<UserShortDto>
      *
-     * @param userId
      * @return List<UserShortDto>
      */
     private List<UserShortDto> getUserShortDtos(Long userId) {
@@ -167,7 +170,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     /**
      * Endpoint: GET "/users/{userId}/unsubscribe/all"
      *
-     * @param userId
+     * @param userId пользователь, который будет отписываться от всех других пользователей
      */
     @Override
     @Transactional
