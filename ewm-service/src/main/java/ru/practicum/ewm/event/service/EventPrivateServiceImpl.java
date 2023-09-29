@@ -151,8 +151,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         return events.stream()
                 .map(EventMapper::toEventShortDtoFromEvent)
                 .peek(eventShortDto -> {
-                    eventShortDto.setViews(countViews.get(eventShortDto.getId()));
-                    eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
+                    eventShortDto.setViews(countViews.getOrDefault(eventShortDto.getId(), 0L));
+                    eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(eventShortDto.getId(), 0L));
                 })
                 .collect(Collectors.toList());
     }
@@ -168,12 +168,6 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     @Override
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
-        // FIXME: метод выгружает лишнюю информацию из БД, а по двум параметрам найти не получается
-//        List<Request> requests2 = requestRepository.getAllByEvent_Id(eventId)
-//                .stream()
-//                .filter(request -> request.getEvent().getInitiator().getId().equals(userId))
-//                .collect(Collectors.toList());
-
         List<Request> requests = requestRepository.getByEventIdAndInitiatorId(eventId, userId);
 
         if (requests.isEmpty()) {

@@ -10,7 +10,7 @@ public class EventDateValidator {
     public static void isDateIsNotBefore(LocalDateTime eventDate, int hours) {
         if (eventDate.isBefore(LocalDateTime.now().plusHours(hours))) {
             throw new InvalidRequestException("Cannot create the event because event date cannot be earlier " +
-                    "than two hours after current moment");
+                    "than " + hours + " hours after current moment");
         }
     }
 }

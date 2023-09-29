@@ -55,20 +55,6 @@ public class EventMapper {
                 .build();
     }
 
-//    public Event toEventFromUpdateEventUserRequest(UpdateEventUserRequest updateEventUserRequest) {
-//        return Event.builder()
-//                .annotation(updateEventUserRequest.getAnnotation())
-//                .description(updateEventUserRequest.getDescription())
-//                .eventDate(updateEventUserRequest.getEventDate())
-//                .lon(updateEventUserRequest.getLocation().getLon())
-//                .lat(updateEventUserRequest.getLocation().getLat())
-//                .paid(updateEventUserRequest.getPaid())
-//                .participantLimit(updateEventUserRequest.getParticipantLimit())
-//                .requestModeration(updateEventUserRequest.getRequestModeration())
-//                .title(updateEventUserRequest.getTitle())
-//                .build();
-//    }
-
     public EventShortDto toEventShortDtoFromEvent(Event event) {
         return EventShortDto.builder()
                 .annotation(event.getAnnotation())

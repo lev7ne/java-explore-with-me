@@ -12,6 +12,10 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> getEventsByInitiator_Id(Long userId, Pageable pageable);
 
+    @Query("select e from Event e " +
+            "where e.initiator.id in :initiatorIds")
+    List<Event> getEventsByInitiator_IdIn(List<Long> initiatorIds);
+
     List<Event> getEventsByCategory_Id(Long catId);
 
     List<Event> getEventsByIdIn(List<Long> eventIds);
