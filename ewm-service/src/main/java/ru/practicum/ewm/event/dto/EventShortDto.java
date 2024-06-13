@@ -1,27 +1,22 @@
 package ru.practicum.ewm.event.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@Setter
 public class EventShortDto {
+    private long id;
+    private String title;
     private String annotation;
     private CategoryDto category;
+    private UserShortDto creator;
     private LocalDateTime eventDate;
-    private Long id;
-    private UserShortDto initiator;
-    private Boolean paid;
-    private String title;
-    private Long confirmedRequests;
-    @Builder.Default
-    private Long views = 0L;
+    private boolean paid;
+    private long confirmedRequests;
+    private long views;
 }

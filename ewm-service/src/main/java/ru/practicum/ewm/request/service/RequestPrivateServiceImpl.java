@@ -10,10 +10,9 @@ import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.mapper.RequestMapper;
 import ru.practicum.ewm.request.model.Request;
 import ru.practicum.ewm.request.repository.RequestRepository;
-import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
 import ru.practicum.ewm.util.exception.ConditionMismatchException;
-import ru.practicum.ewm.util.helper.ObjectFinder;
+import ru.practicum.ewm.util.exception.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,7 +41,8 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
             throw new ConditionMismatchException("User's request for the event already exists");
         }
 
-        Event event = ObjectFinder.findEventById(eventRepository, eventId);
+        var event = eventRepository.findById(eventId).orElseThrow(() ->
+                new NotFoundException("Event with id=" + eventId + " was not found"));
 
         if (event.getState() != Event.State.PUBLISHED) {
             throw new ConditionMismatchException("The event must be published");
@@ -56,11 +56,12 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
             }
         }
 
-        if (requesterId.equals(event.getInitiator().getId())) {
+        if (requesterId.equals(event.getCreator().getId())) {
             throw new ConditionMismatchException("User cannot create event request to his own event");
         }
 
-        User requester = ObjectFinder.findUserById(userRepository, requesterId);
+        var requester = userRepository.findById(requesterId).orElseThrow(() ->
+                new NotFoundException("User with id=" + requesterId + " was not found"));
 
         Request request = Request.builder()
                 .createDate(LocalDateTime.now())
@@ -69,7 +70,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
                 .requestStatus(Request.RequestStatus.PENDING)
                 .build();
 
-        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
+        if (!event.isRequestModeration() || event.getParticipantLimit() == 0) {
             request.setRequestStatus(Request.RequestStatus.CONFIRMED);
         }
 
@@ -85,7 +86,8 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
     @Override
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getAll(Long requesterId) {
-        ObjectFinder.findUserById(userRepository, requesterId);
+        var requester = userRepository.findById(requesterId).orElseThrow(() ->
+                new NotFoundException("User with id=" + requesterId + " was not found"));
 
         List<Request> requests = requestRepository.getAllByRequester_Id(requesterId);
 
@@ -108,7 +110,9 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
     @Override
     @Transactional
     public ParticipationRequestDto cancel(Long requesterId, Long requestId) {
-        Request canceledRequest = ObjectFinder.findRequestById(requestRepository, requestId);
+        var canceledRequest = requestRepository.findById(requestId).orElseThrow(() ->
+                new NotFoundException("Request with id=" + requestId + " was not found"));
+
         canceledRequest.setRequestStatus(Request.RequestStatus.CANCELED);
 
         return RequestMapper.toParticipationRequestDtoFromRequest(requestRepository.save(canceledRequest));

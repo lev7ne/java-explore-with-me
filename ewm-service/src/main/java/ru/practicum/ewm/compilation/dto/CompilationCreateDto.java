@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewCompilationDto {
+public class CompilationCreateDto {
     private Long id;
     @NotBlank(message = "The compilation title cannot be empty")
     @Length(min = 1, max = 50)

@@ -6,7 +6,7 @@ import ru.practicum.ewm.category.dto.CategoryDto;
 import java.util.List;
 
 public interface CategoryPublicService {
-    List<CategoryDto> getAll(Pageable pageable);
+    List<CategoryDto> index(Pageable pageable);
 
-    CategoryDto getById(Long catId);
+    CategoryDto show(long id);
 }

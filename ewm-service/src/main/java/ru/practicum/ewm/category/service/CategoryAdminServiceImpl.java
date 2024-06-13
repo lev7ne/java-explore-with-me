@@ -3,71 +3,70 @@ package ru.practicum.ewm.category.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.category.dto.CategoryCreateDto;
 import ru.practicum.ewm.category.dto.CategoryDto;
-import ru.practicum.ewm.category.dto.NewCategoryDto;
+import ru.practicum.ewm.category.dto.CategoryUpdateDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
-import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
-import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.util.exception.ConditionMismatchException;
-import ru.practicum.ewm.util.helper.ObjectFinder;
-
-import java.util.List;
+import ru.practicum.ewm.util.exception.NotFoundException;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryAdminServiceImpl implements CategoryAdminService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
+    private final CategoryMapper categoryMapper;
 
     /**
-     * Endpoint: POST "/admin/categories"
+     * Создание категории;
      *
-     * @param newCategoryDto
+     * @param dto
      * @return CategoryDto
      */
     @Override
     @Transactional
-    public CategoryDto create(NewCategoryDto newCategoryDto) {
-        return CategoryMapper.toCategoryDtoFromCategory(
-                categoryRepository.save(CategoryMapper.toCategoryFromCategoryDto(newCategoryDto))
-        );
+    public CategoryDto create(CategoryCreateDto dto) {
+        var category = categoryMapper.map(dto);
+        category = categoryRepository.save(category);
+
+        return categoryMapper.map(category);
     }
 
     /**
-     * Endpoint: PATCH "/admin/categories/{catId}"
+     * Обновление категории;
      *
-     * @param newCategoryDto
-     * @param catId
+     * @param dto
+     * @param id
      * @return CategoryDto
      */
     @Override
     @Transactional
-    public CategoryDto update(NewCategoryDto newCategoryDto, Long catId) {
-        Category updatedCategory = ObjectFinder.findCategoryById(categoryRepository, catId);
+    public CategoryDto update(CategoryUpdateDto dto, long id) {
+        var category = categoryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Category with id=" + id + " was not found"));
 
-        updatedCategory.setName(newCategoryDto.getName());
+        categoryMapper.update(dto, category);
+        category = categoryRepository.save(category);
 
-        return CategoryMapper.toCategoryDtoFromCategory(categoryRepository.save(updatedCategory));
+        return categoryMapper.map(category);
     }
 
     /**
-     * Endpoint: DELETE "/admin/categories/{catId}"
+     * Удаление категории;
      *
-     * @param catId
+     * @param id
      */
     @Override
     @Transactional
-    public void delete(Long catId) {
-        ObjectFinder.findCategoryById(categoryRepository, catId);
+    public void delete(long id) {
+        var events = eventRepository.getEventsByCategory_Id(id);
 
-        List<Event> eventsByCategory = eventRepository.getEventsByCategory_Id(catId);
-
-        if (!eventsByCategory.isEmpty()) {
+        if (events.isEmpty()) {
+            categoryRepository.deleteById(id);
+        } else {
             throw new ConditionMismatchException("The category is not empty");
         }
-
-        categoryRepository.deleteById(catId);
     }
 }

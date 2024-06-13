@@ -1,22 +1,23 @@
 package ru.practicum.ewm.category.mapper;
 
-import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import ru.practicum.ewm.category.dto.CategoryCreateDto;
 import ru.practicum.ewm.category.dto.CategoryDto;
-import ru.practicum.ewm.category.dto.NewCategoryDto;
+import ru.practicum.ewm.category.dto.CategoryUpdateDto;
 import ru.practicum.ewm.category.model.Category;
 
-@UtilityClass
-public class CategoryMapper {
-    public Category toCategoryFromCategoryDto(NewCategoryDto newCategoryDto) {
-        return Category.builder()
-                .name(newCategoryDto.getName())
-                .build();
-    }
+@Mapper(
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        componentModel = MappingConstants.ComponentModel.SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public abstract class CategoryMapper {
+    public abstract Category map(CategoryCreateDto dto);
 
-    public CategoryDto toCategoryDtoFromCategory(Category category) {
-        return CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .build();
-    }
+    public abstract CategoryDto map(Category model);
+
+    public abstract void update(CategoryUpdateDto dto, Category model);
 }

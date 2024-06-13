@@ -2,6 +2,7 @@ package ru.practicum.ewm.event.repository;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.ewm.event.model.Event;
 
@@ -9,11 +10,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
-public interface EventRepository extends JpaRepository<Event, Long> {
+public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
     List<Event> getEventsByInitiator_Id(Long userId, Pageable pageable);
 
     @Query("select e from Event e " +
-            "where e.initiator.id in :initiatorIds")
+            "where e.creator.id in :initiatorIds")
     List<Event> getEventsByInitiator_IdIn(List<Long> initiatorIds);
 
     List<Event> getEventsByCategory_Id(Long catId);
@@ -32,7 +33,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                 LocalDateTime rangeEnd, Pageable pageable);
 
     @Query("SELECT e FROM Event e " +
-            "WHERE ((:initiators IS NULL) OR (e.initiator.id IN :initiators)) " +
+            "WHERE ((:initiators IS NULL) OR (e.creator.id IN :initiators)) " +
             "AND ((:states IS NULL) OR (e.state IN :states)) " +
             "AND ((:categories IS NULL) OR (e.category.id IN :categories)) " +
             "AND ((CAST(:rangeStart AS date) IS NULL) OR (e.eventDate >= :rangeStart)) " +

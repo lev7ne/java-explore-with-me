@@ -4,43 +4,46 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.user.dto.NewUserRequest;
+import ru.practicum.ewm.user.dto.UserCreateDto;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
+import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.repository.UserRepository;
-import ru.practicum.ewm.util.helper.ObjectFinder;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserAdminServiceImpl implements UserAdminService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     /**
-     * Endpoint: POST "/admin/users"
+     * Создание пользователя;
      *
-     * @param newUserRequest
+     * @param dto
      * @return UserDto
      */
     @Override
     @Transactional
-    public UserDto create(NewUserRequest newUserRequest) {
-        return UserMapper.toUserDtoFromUser(userRepository.save(UserMapper.toUserFromUserDtoRequest(newUserRequest)));
+    public UserDto create(UserCreateDto dto) {
+        var user = userMapper.map(dto);
+        user = userRepository.save(user);
+
+        return userMapper.map(user);
     }
 
     /**
-     * Endpoint: DELETE "/admin/users"
+     * Удаление пользователя;
      *
-     * @param userId
+     * @param id
      */
     @Override
     @Transactional
-    public void delete(Long userId) {
-        ObjectFinder.findUserById(userRepository, userId);
-        userRepository.deleteById(userId);
+    public void delete(long id) {
+        userRepository.deleteById(id);
     }
+
 
     /**
      * Endpoint: GET "/admin/users"
@@ -51,15 +54,20 @@ public class UserAdminServiceImpl implements UserAdminService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<UserDto> getAllByIds(List<Long> ids, Pageable pageable) {
+    public List<UserDto> index(List<Long> ids, Pageable pageable) {
+        List<User> users;
+
         if (ids == null || ids.isEmpty()) {
-            return userRepository.findAll(pageable).stream()
-                    .map(UserMapper::toUserDtoFromUser)
-                    .collect(Collectors.toList());
+            users = userRepository.findAll(pageable).getContent();
+        } else {
+            users = userRepository.getUsersByIdIn(ids, pageable);
         }
 
-        return userRepository.getUsersByIdIn(ids, pageable).stream()
-                .map(UserMapper::toUserDtoFromUser)
-                .collect(Collectors.toList());
+        var dtos = users.stream()
+                .map(userMapper::map)
+                .toList();
+
+        return dtos;
     }
+
 }

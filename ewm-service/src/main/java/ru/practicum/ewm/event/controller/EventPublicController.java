@@ -6,9 +6,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.dto.EventDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.service.EventPublicService;
@@ -28,12 +29,15 @@ public class EventPublicController {
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final EventPublicService eventPublicService;
 
-    @GetMapping(value = "/{eventId}")
+    @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto getById(@PathVariable Long eventId,
-                                HttpServletRequest request) {
+    public ResponseEntity<EventDto> show(@PathVariable Long id,
+                                         HttpServletRequest request) {
 
-        return eventPublicService.getById(eventId, request);
+        var dto = eventPublicService.show(id, request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(dto);
     }
 
     @GetMapping

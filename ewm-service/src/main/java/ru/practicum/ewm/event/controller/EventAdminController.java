@@ -2,13 +2,13 @@ package ru.practicum.ewm.event.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.event.dto.EventFullDto;
-import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
+import ru.practicum.ewm.event.dto.EventDto;
+import ru.practicum.ewm.event.dto.EventParamDto;
+import ru.practicum.ewm.event.dto.EventUpdateAdminDto;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.service.EventAdminService;
 
@@ -23,29 +23,35 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 public class EventAdminController {
-    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final EventAdminService eventAdminService;
 
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<EventFullDto> getAll(@RequestParam(required = false)
-                                     @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeStart,
-                                     @RequestParam(required = false)
-                                     @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeEnd,
-                                     @RequestParam(required = false) List<Long> users,
-                                     @RequestParam(required = false) List<Event.State> states,
-                                     @RequestParam(required = false) List<Long> categories,
-                                     @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                     @RequestParam(defaultValue = "10") @Positive Integer size) {
-        Pageable pageable = PageRequest.of(from / size, size);
-        return eventAdminService.getAll(users, states, categories, rangeStart, rangeEnd, pageable);
+    @GetMapping("")
+    public ResponseEntity<List<EventDto>> index(@RequestParam(required = false) LocalDateTime rangeStart,
+                                                @RequestParam(required = false) LocalDateTime rangeEnd,
+                                                @RequestParam(required = false) List<Long> users,
+                                                @RequestParam(required = false) List<Event.State> states,
+                                                @RequestParam(required = false) List<Long> categories,
+                                                @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                @RequestParam(defaultValue = "10") @Positive int size) {
+
+        var param = new EventParamDto(rangeStart, rangeEnd, users, states, categories);
+        var pageable = PageRequest.of(from / size, size);
+
+        var dtos = eventAdminService.index(param, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(dtos);
     }
 
-    @PatchMapping(value = "/{eventId}")
+    @PatchMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto update(@Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest,
-                               @PathVariable Long eventId) {
-        return eventAdminService.update(eventId, updateEventAdminRequest);
+    public ResponseEntity<EventDto> update(@Valid @RequestBody EventUpdateAdminDto eventUpdateAdminDto,
+                                           @PathVariable long id) {
+
+        var dto = eventAdminService.update(id, eventUpdateAdminDto);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(dto);
     }
 
 }

@@ -1,25 +1,19 @@
 package ru.practicum.ewm.compilation.mapper;
 
-import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import ru.practicum.ewm.compilation.dto.CompilationCreateDto;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
-import ru.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.compilation.model.Compilation;
 
-
-@UtilityClass
-public class CompilationMapper {
-    public Compilation toCompilationFromNewCompilationDto(NewCompilationDto newCompilationDto) {
-        return Compilation.builder()
-                .title(newCompilationDto.getTitle())
-                .pinned(newCompilationDto.getPinned())
-                .build();
-    }
-
-    public CompilationDto toCompilationDtoFromCompilation(Compilation compilation) {
-        return CompilationDto.builder()
-                .id(compilation.getId())
-                .title(compilation.getTitle())
-                .pinned(compilation.getPinned())
-                .build();
-    }
+@Mapper(
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        componentModel = MappingConstants.ComponentModel.SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public abstract class CompilationMapper {
+    public abstract Compilation map(CompilationCreateDto dto);
+    public abstract CompilationDto map(Compilation model);
 }

@@ -3,9 +3,9 @@ package ru.practicum.ewm.compilation.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.compilation.dto.CompilationCreateDto;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
-import ru.practicum.ewm.compilation.dto.NewCompilationDto;
-import ru.practicum.ewm.compilation.dto.UpdateCompilationRequest;
+import ru.practicum.ewm.compilation.dto.CompilationUpdateDto;
 import ru.practicum.ewm.compilation.service.CompilationAdminService;
 
 import javax.validation.Valid;
@@ -18,8 +18,8 @@ public class CompilationAdminController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CompilationDto create(@Valid @RequestBody NewCompilationDto newCompilationDto) {
-        return compilationAdminService.create(newCompilationDto);
+    public CompilationDto create(@Valid @RequestBody CompilationCreateDto compilationCreateDto) {
+        return compilationAdminService.create(compilationCreateDto);
     }
 
     @DeleteMapping(value = "/{compId}")
@@ -31,7 +31,7 @@ public class CompilationAdminController {
     @PatchMapping(value = "/{compId}")
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto update(@PathVariable Long compId,
-                                 @Valid @RequestBody UpdateCompilationRequest updateCompilationRequest) {
-        return compilationAdminService.update(compId, updateCompilationRequest);
+                                 @Valid @RequestBody CompilationUpdateDto compilationUpdateDto) {
+        return compilationAdminService.update(compId, compilationUpdateDto);
     }
 }

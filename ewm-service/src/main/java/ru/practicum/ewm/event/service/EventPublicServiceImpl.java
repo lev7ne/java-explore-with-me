@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.StatsClient;
-import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.dto.EventDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
@@ -16,7 +16,6 @@ import ru.practicum.ewm.request.model.Request;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.util.exception.NotFoundException;
 import ru.practicum.ewm.util.helper.ObjectCounter;
-import ru.practicum.ewm.util.helper.ObjectFinder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -31,6 +30,7 @@ import java.util.stream.Collectors;
 public class EventPublicServiceImpl implements EventPublicService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
+    private final EventMapper eventMapper;
     private final StatsClient statsClient;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -43,12 +43,14 @@ public class EventPublicServiceImpl implements EventPublicService {
      */
     @Override
     @Transactional(readOnly = true)
-    public EventFullDto getById(Long eventId, HttpServletRequest request) {
-        Event event = ObjectFinder.findEventById(eventRepository, eventId);
+    public EventDto show(long eventId, HttpServletRequest request) {
+        var event = eventRepository.findById(eventId).orElseThrow(() ->
+                new NotFoundException("Event with id=" + eventId + " was not found"));
 
         if (event.getState() != Event.State.PUBLISHED) {
             throw new NotFoundException("Event must be published");
         }
+
         statsClient.add(
                 new EndpointHit(
                         "ewm-main-service",
@@ -58,13 +60,13 @@ public class EventPublicServiceImpl implements EventPublicService {
                 )
         );
 
-        EventFullDto eventFullDto = EventMapper.toEventFullDtoFromEvent(event);
-        eventFullDto.setViews(countViews(request));
+        var dto = eventMapper.map(event);
+        dto.setViews(countViews(request));
 
-        Long count = requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
-        eventFullDto.setConfirmedRequests(count);
+        long count = requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
+        dto.setConfirmedRequests(count);
 
-        return eventFullDto;
+        return dto;
     }
 
     /**
@@ -152,7 +154,7 @@ public class EventPublicServiceImpl implements EventPublicService {
         Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
 
         return events.stream()
-                .map(EventMapper::toEventShortDtoFromEvent)
+                .map(eventMapper::mapShort)
                 .peek(eventShortDto -> {
                     eventShortDto.setViews(countViews.get(eventShortDto.getId()));
                     eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));

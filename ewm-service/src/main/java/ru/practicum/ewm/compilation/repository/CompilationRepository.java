@@ -8,6 +8,6 @@ import java.util.List;
 
 
 public interface CompilationRepository extends JpaRepository<Compilation, Long> {
-    List<Compilation> getAllByPinned(Boolean pinned, Pageable pageable);
+    List<Compilation> getAllByPinned(boolean pinned, Pageable pageable);
 
 }

@@ -13,7 +13,7 @@ import ru.practicum.ewm.event.repository.EventRepository;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.subscription.model.Subscription;
 import ru.practicum.ewm.subscription.repository.SubscriptionRepository;
-import ru.practicum.ewm.user.dto.UserDtoWithEvents;
+import ru.practicum.ewm.user.dto.UserEventsDto;
 import ru.practicum.ewm.user.dto.UserShortDto;
 import ru.practicum.ewm.user.mapper.UserMapper;
 import ru.practicum.ewm.user.model.User;
@@ -35,6 +35,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
+    private final UserMapper userMapper;
+    private final EventMapper eventMapper;
     private final StatsClient statsClient;
 
     /**
@@ -109,7 +111,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<UserDtoWithEvents> getAll(Long userId, Pageable pageable) {
+    public List<UserEventsDto> getAll(Long userId, Pageable pageable) {
         List<Subscription> subscriptions = subscriptionRepository.getAllByUserIdAndMutualSubscription(userId, true);
         List<Long> mutualSubscriptionsIds = subscriptions.stream()
                 .map(Subscription::getSubscribedUserId)
@@ -118,7 +120,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         List<Event> mutualSubscriptionEvents = eventRepository.getEventsByInitiator_IdIn(mutualSubscriptionsIds);
         Map<Long, List<Event>> eventsGroupingByInitiatorId = mutualSubscriptionEvents.stream()
-                .collect(Collectors.groupingBy(event -> event.getInitiator().getId()));
+                .collect(Collectors.groupingBy(event -> event.getCreator().getId()));
         List<Long> eventIds = mutualSubscriptionEvents.stream()
                 .map(Event::getId)
                 .distinct()
@@ -128,7 +130,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         return users.stream()
                 .map(user -> {
-                    UserDtoWithEvents userDtoWithEvents = UserDtoWithEvents.builder()
+                    UserEventsDto userEventsDto = UserEventsDto.builder()
                             .id(user.getId())
                             .name(user.getName())
                             .email(user.getEmail())
@@ -136,17 +138,17 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
                     List<Event> events = eventsGroupingByInitiatorId.get(user.getId());
                     if (events == null) {
-                        return userDtoWithEvents;
+                        return userEventsDto;
                     }
 
                     events.forEach(event -> {
-                        EventShortDto eventShortDto = EventMapper.toEventShortDtoFromEvent(event);
+                        EventShortDto eventShortDto = eventMapper.mapShort(event);
                         eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L));
                         eventShortDto.setViews(countViews.getOrDefault(event.getId(), 0L));
 
-                        userDtoWithEvents.getPublishedSubEvents().add(eventShortDto);
+                        userEventsDto.getPublishedSubEvents().add(eventShortDto);
                     });
-                    return userDtoWithEvents;
+                    return userEventsDto;
                 })
                 .collect(Collectors.toList());
     }
@@ -163,7 +165,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .collect(Collectors.toList());
 
         return userRepository.getUsersByIdIn(subscriptionsIds, Pageable.unpaged()).stream()
-                .map(UserMapper::toUserShortDtoFromUser)
+                .map(userMapper::mapShort)
                 .collect(Collectors.toList());
     }
 

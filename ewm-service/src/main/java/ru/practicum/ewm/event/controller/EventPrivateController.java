@@ -4,12 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.dto.EventCreateDto;
+import ru.practicum.ewm.event.dto.EventDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
-import ru.practicum.ewm.event.dto.NewEventDto;
-import ru.practicum.ewm.event.dto.UpdateEventUserRequest;
+import ru.practicum.ewm.event.dto.EventUpdateUserDto;
 import ru.practicum.ewm.event.service.EventPrivateService;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateResult;
@@ -29,24 +30,30 @@ public class EventPrivateController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto create(@Valid @RequestBody NewEventDto newEventDto,
-                               @PathVariable Long userId) {
-        return eventPrivateService.create(newEventDto, userId);
+    public ResponseEntity<EventDto> create(@Valid @RequestBody EventCreateDto eventCreateDto,
+                                           @PathVariable long userId) {
+
+        var dto = eventPrivateService.create(eventCreateDto, userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(dto);
     }
 
     @GetMapping(value = "/{eventId}")
-    @ResponseStatus(HttpStatus.OK)
-    public EventFullDto getById(@PathVariable Long userId,
-                                @PathVariable Long eventId) {
-        return eventPrivateService.getById(userId, eventId);
+    public ResponseEntity<EventDto> show(@PathVariable Long userId,
+                         @PathVariable Long eventId) {
+        var dto = eventPrivateService.show(userId, eventId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(dto);
     }
 
     @PatchMapping(value = "/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto update(@Valid @RequestBody UpdateEventUserRequest updateEventUserRequest,
-                               @PathVariable Long userId,
-                               @PathVariable Long eventId) {
-        return eventPrivateService.update(updateEventUserRequest, userId, eventId);
+    public EventDto update(@Valid @RequestBody EventUpdateUserDto eventUpdateUserDto,
+                           @PathVariable Long userId,
+                           @PathVariable Long eventId) {
+        return eventPrivateService.update(eventUpdateUserDto, userId, eventId);
     }
 
     @GetMapping

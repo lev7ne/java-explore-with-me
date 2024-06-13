@@ -2,7 +2,6 @@ package ru.practicum.ewm.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.request.service.RequestPrivateService;
@@ -13,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/users/{requesterId}/requests")
 @RequiredArgsConstructor
-@Validated
 public class RequestPrivateController {
     private final RequestPrivateService requestPrivateService;
 

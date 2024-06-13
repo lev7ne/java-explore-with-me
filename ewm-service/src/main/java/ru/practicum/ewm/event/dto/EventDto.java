@@ -1,32 +1,33 @@
 package ru.practicum.ewm.event.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
-@Data
-@Builder
-public class EventFullDto {
+@Getter
+@Setter
+public class EventDto {
     private String annotation;
     private CategoryDto category;
-    private LocalDateTime createdOn;
+    private LocalDateTime createdDate;
     private String description;
     private LocalDateTime eventDate;
-    private Long id;
-    private UserShortDto initiator;
+    private long id;
+    private UserShortDto creator;
     private Location location;
-    private Boolean paid;
-    private Long participantLimit;
+    private boolean paid;
+    private long participantLimit;
     private LocalDateTime publishedOn;
-    private Boolean requestModeration;
+    private boolean requestModeration;
     private Event.State state;
     private String title;
     @Builder.Default
-    private Long confirmedRequests = 0L;
+    private long confirmedRequests = 0L;
     @Builder.Default
-    private Long views = 0L;
+    private long views = 0L;
 }

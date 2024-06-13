@@ -1,17 +1,19 @@
 package ru.practicum.ewm.user.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewUserRequest {
+public class UserCreateDto {
     @NotBlank
     @Length(min = 2, max = 250)
     private String name;

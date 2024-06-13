@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.subscription.service.SubscriptionService;
-import ru.practicum.ewm.user.dto.UserDtoWithEvents;
+import ru.practicum.ewm.user.dto.UserEventsDto;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import javax.validation.constraints.Positive;
@@ -58,9 +58,9 @@ public class SubscriptionPrivateController {
      */
     @GetMapping(value = "/subscriptions")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDtoWithEvents> getAll(@PathVariable Long userId,
-                                          @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                          @RequestParam(defaultValue = "10") @Positive Integer size) {
+    public List<UserEventsDto> getAll(@PathVariable Long userId,
+                                      @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                      @RequestParam(defaultValue = "10") @Positive Integer size) {
         Pageable pageable = PageRequest.of(from / size, size);
         return subscriptionService.getAll(userId, pageable);
     }

@@ -1,24 +1,21 @@
 package ru.practicum.ewm.category.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.dto.CategoryDto;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
-import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.repository.CategoryRepository;
-import ru.practicum.ewm.util.helper.ObjectFinder;
+import ru.practicum.ewm.util.exception.NotFoundException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryPublicServiceImpl implements CategoryPublicService {
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
     /**
      * Endpoint: GET "/categories"
@@ -28,29 +25,32 @@ public class CategoryPublicServiceImpl implements CategoryPublicService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryDto> getAll(Pageable pageable) {
-        Page<Category> categories = categoryRepository.findAll(pageable);
+    public List<CategoryDto> index(Pageable pageable) {
+        var categories = categoryRepository.findAll(pageable).getContent();
 
-        if (categories.getContent().isEmpty()) {
-            return new ArrayList<>();
+        if (categories.isEmpty()) {
+            return List.of();
         }
 
-        return categoryRepository.findAll(pageable).stream()
-                .map(CategoryMapper::toCategoryDtoFromCategory)
-                .collect(Collectors.toList());
+        var dtos = categories.stream()
+                .map(categoryMapper::map)
+                .toList();
+
+        return dtos;
     }
 
     /**
-     * Endpoint: GET "/categories/{catId}"
+     * Чтение категории по id;
      *
-     * @param catId
+     * @param id
      * @return CategoryDto
      */
     @Override
     @Transactional(readOnly = true)
-    public CategoryDto getById(Long catId) {
-        return CategoryMapper.toCategoryDtoFromCategory(
-                ObjectFinder.findCategoryById(categoryRepository, catId)
-        );
+    public CategoryDto show(long id) {
+        var category = categoryRepository.findById(id).orElseThrow(() ->
+                new NotFoundException("Category with id=" + id + " was not found"));
+
+        return categoryMapper.map(category);
     }
 }

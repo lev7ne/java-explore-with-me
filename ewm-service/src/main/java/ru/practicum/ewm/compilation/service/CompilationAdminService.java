@@ -1,13 +1,13 @@
 package ru.practicum.ewm.compilation.service;
 
+import ru.practicum.ewm.compilation.dto.CompilationCreateDto;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
-import ru.practicum.ewm.compilation.dto.NewCompilationDto;
-import ru.practicum.ewm.compilation.dto.UpdateCompilationRequest;
+import ru.practicum.ewm.compilation.dto.CompilationUpdateDto;
 
 public interface CompilationAdminService {
-    CompilationDto create(NewCompilationDto newCompilationDto);
+    CompilationDto create(CompilationCreateDto compilationCreateDto);
 
     void delete(Long compId);
 
-    CompilationDto update(Long compId, UpdateCompilationRequest updateCompilationRequest);
+    CompilationDto update(Long compId, CompilationUpdateDto compilationUpdateDto);
 }

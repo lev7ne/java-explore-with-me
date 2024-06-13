@@ -1,13 +1,14 @@
 package ru.practicum.ewm.category.service;
 
+import ru.practicum.ewm.category.dto.CategoryCreateDto;
 import ru.practicum.ewm.category.dto.CategoryDto;
-import ru.practicum.ewm.category.dto.NewCategoryDto;
+import ru.practicum.ewm.category.dto.CategoryUpdateDto;
 
 public interface CategoryAdminService {
-    CategoryDto create(NewCategoryDto newCategoryDto);
+    CategoryDto create(CategoryCreateDto dto);
 
-    CategoryDto update(NewCategoryDto newCategoryDto, Long catId);
+    CategoryDto update(CategoryUpdateDto dto, long id);
 
-    void delete(Long catId);
+    void delete(long id);
 
 }
