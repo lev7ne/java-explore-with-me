@@ -21,7 +21,7 @@ CREATE TABLE events
     title              VARCHAR(120)                            NOT NULL,
     annotation         VARCHAR(2000)                           NOT NULL,
     category_id        BIGINT                                  NOT NULL,
-    creator_id         BIGINT                                  NOT NULL,
+    initiator_id       BIGINT                                  NOT NULL,
     description        VARCHAR(7000)                           NOT NULL,
     event_date         TIMESTAMP WITHOUT TIME ZONE,
     lat                DOUBLE PRECISION                        NOT NULL,
@@ -29,12 +29,12 @@ CREATE TABLE events
     paid               BOOLEAN                                 NOT NULL,
     participant_limit  BIGINT                                  NOT NULL,
     request_moderation BOOLEAN                                 NOT NULL,
-    create_date        TIMESTAMP WITHOUT TIME ZONE,
+    created_date       TIMESTAMP WITHOUT TIME ZONE,
     published_on       TIMESTAMP WITHOUT TIME ZONE,
     state              VARCHAR(40)                             NOT NULL,
     CONSTRAINT pk_event_id PRIMARY KEY (id),
     CONSTRAINT fk_cat_id_in_event FOREIGN KEY (category_id) REFERENCES categories (id),
-    CONSTRAINT fk_user_id_in_event FOREIGN KEY (creator_id) REFERENCES users (id)
+    CONSTRAINT fk_user_id_in_event FOREIGN KEY (initiator_id) REFERENCES users (id)
 );
 
 CREATE TABLE compilations

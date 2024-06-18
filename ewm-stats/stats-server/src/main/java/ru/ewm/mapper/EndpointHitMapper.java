@@ -1,0 +1,18 @@
+package ru.ewm.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import ru.ewm.dto.EndpointHit;
+import ru.ewm.dto.EndpointHitCreateDto;
+import ru.ewm.dto.EndpointHitDto;
+
+
+@Mapper(
+        componentModel = MappingConstants.ComponentModel.SPRING
+)
+public abstract class EndpointHitMapper {
+
+    public abstract EndpointHit toEntity(EndpointHitCreateDto dto);
+
+    public abstract EndpointHitDto toDto(EndpointHit model);
+}

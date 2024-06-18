@@ -1,0 +1,21 @@
+package ru.ewm.compilation.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+@Getter
+@Setter
+public class CompilationUpdateDto {
+    @NotBlank(message = "The compilation title cannot be empty")
+    @Size(min = 1)
+    @Size(max = 50)
+    private String title;
+    private boolean pinned;
+    private List<Long> events = new ArrayList<>();
+}
