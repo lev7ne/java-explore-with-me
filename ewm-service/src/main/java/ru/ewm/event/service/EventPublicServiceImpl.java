@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ewm.StatsClient;
 import ru.ewm.event.dto.EventDto;
 import ru.ewm.event.dto.EventParamDto;
 import ru.ewm.event.dto.EventShortDto;
@@ -13,8 +12,9 @@ import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
 import ru.ewm.event.specification.EventSpecification;
-import ru.ewm.exception.NotFoundException;
 import ru.ewm.request.repository.RequestRepository;
+import ru.ewm.stat.service.StatsService;
+import ru.ewm.util.exception.NotFoundException;
 
 import java.util.List;
 
@@ -25,57 +25,37 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
     private final EventMapper eventMapper;
-    private final StatsClient statsClient;
     private final EventSpecification eventSpecification;
-//    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final StatsService statsService;
 
     /**
      *
      */
     @Override
     @Transactional(readOnly = true)
-    public EventDto show(long eventId, HttpServletRequest request) {
-        var event = eventRepository.findById(eventId).orElseThrow(() ->
-                new NotFoundException("Event with id=" + eventId + " was not found"));
+    public EventDto show(long id, HttpServletRequest request) {
+        var event = eventRepository.findById(id).orElseThrow(() ->
+                new NotFoundException("Event with id=" + id + " was not found"));
 
         if (event.getState() != Event.State.PUBLISHED) {
             throw new NotFoundException("Event must be published");
         }
 
-//        statsClient.add(
-//                new EndpointHitCreateDto(
-//                        "ewm-main-service",
-//                        request.getRequestURI(),
-//                        request.getRemoteAddr()
-//                )
-//        );
+        statsService.addView(request);
+        var events = List.of(id);
 
         var dto = eventMapper.map(event);
-//        dto.setViews(countViews(request));
 
+//        dto.setViews(countViews(request));
 //        long count = requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
 //        dto.setConfirmedRequests(count);
 
         return dto;
     }
 
-//    /**
-//     *
-//     */
-//    private long countViews(HttpServletRequest request) {
-//        List<ViewStats> stats = statsClient.getAll(
-//                LocalDateTime.now().minusYears(100).format(formatter),
-//                LocalDateTime.now().plusHours(1).format(formatter),
-//                List.of(request.getRequestURI()),
-//                true);
-//
-//        if (stats.isEmpty()) {
-//            return 0L;
-//        }
-//
-//        return stats.size();
-//    }
-
+    /**
+     *
+     */
     @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> index(EventParamDto paramDto, Pageable pageable, HttpServletRequest request) {

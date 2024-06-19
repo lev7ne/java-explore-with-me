@@ -1,4 +1,4 @@
-package ru.ewm.dto;
+package ru.ewm.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

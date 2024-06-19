@@ -5,13 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
-import ru.ewm.exception.ConditionMismatchException;
-import ru.ewm.exception.NotFoundException;
 import ru.ewm.request.dto.ParticipationRequestDto;
 import ru.ewm.request.mapper.RequestMapper;
 import ru.ewm.request.model.Request;
 import ru.ewm.request.repository.RequestRepository;
 import ru.ewm.user.repository.UserRepository;
+import ru.ewm.util.exception.ConditionMismatchException;
+import ru.ewm.util.exception.NotFoundException;
 
 import java.util.List;
 

@@ -10,8 +10,6 @@ import org.springframework.web.client.RestTemplate;
 import ru.ewm.dto.EndpointHitCreateDto;
 import ru.ewm.dto.ViewStats;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -26,40 +24,35 @@ public class StatsClient {
         this.serverUrl = serverUrl;
     }
 
-    public void add(EndpointHitCreateDto endpointHitCreateDto) {
-        rest.exchange(serverUrl + "/hit",
-                HttpMethod.POST,
-                new HttpEntity<>(endpointHitCreateDto),
-                Object.class);
+    /**
+     *
+     */
+    public void addView(EndpointHitCreateDto createDto) {
+        rest.exchange
+                (
+                        serverUrl + "/hit",
+                        HttpMethod.POST,
+                        new HttpEntity<>(createDto),
+                        Object.class
+                );
     }
 
-    //TODO: новый счетчик
-//    public void add(HttpServletRequest request) {
-//        new EndpointHit.builder()
-//                .
-//                "ewm-main-service",
-//                request.getRequestURI(),
-//                request.getRemoteAddr(),
-//                LocalDateTime.now().format(formatter)
-//        )
-//    }
+    /**
+     *
+     */
+    public List<ViewStats> getViews(List<String> uris) {
+        Map<String, String> parameters = Map.of("uris", String.join(",", uris));
 
+        ResponseEntity<List<ViewStats>> response = rest.exchange
+                (
+                        serverUrl + "/stats?uris={uris}",
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<>() {
+                        },
+                        parameters
+                );
 
-    public List<ViewStats> getAll(String start, String end, List<String> uris, Boolean unique) {
-        Map<String, Object> parameters = Map.of(
-                "start", encodeValue(start),
-                "end", encodeValue(end),
-                "uris", String.join(",", uris),
-                "unique", unique);
-
-        ResponseEntity<List<ViewStats>> response = rest
-                .exchange(serverUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}",
-                        HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-                        }, parameters);
         return response.getBody();
-    }
-
-    private String encodeValue(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }

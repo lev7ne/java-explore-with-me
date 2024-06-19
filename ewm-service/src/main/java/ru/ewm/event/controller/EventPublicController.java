@@ -15,12 +15,12 @@ import ru.ewm.event.dto.EventParamDto;
 import ru.ewm.event.dto.EventShortDto;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.service.EventPublicService;
-import ru.ewm.exception.InvalidRequestException;
+import ru.ewm.util.exception.InvalidRequestException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.ewm.configuration.JacksonConfig.DATE_TIME_FORMAT;
+import static ru.ewm.util.configuration.JacksonConfig.DATE_TIME_FORMAT;
 
 
 @RestController

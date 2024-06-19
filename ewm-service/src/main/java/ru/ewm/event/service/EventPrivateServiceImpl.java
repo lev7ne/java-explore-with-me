@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ewm.StatsClient;
 import ru.ewm.event.dto.EventCreateDto;
 import ru.ewm.event.dto.EventDto;
 import ru.ewm.event.dto.EventShortDto;
@@ -12,14 +11,14 @@ import ru.ewm.event.dto.EventUpdateUserDto;
 import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
-import ru.ewm.exception.ConditionMismatchException;
-import ru.ewm.exception.NotFoundException;
 import ru.ewm.request.dto.ParticipationRequestDto;
 import ru.ewm.request.dto.RequestDto;
 import ru.ewm.request.dto.RequestUpdateDto;
 import ru.ewm.request.mapper.RequestMapper;
 import ru.ewm.request.model.Request;
 import ru.ewm.request.repository.RequestRepository;
+import ru.ewm.util.exception.ConditionMismatchException;
+import ru.ewm.util.exception.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,6 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     private final RequestRepository requestRepository;
     private final EventMapper eventMapper;
     private final RequestMapper requestMapper;
-    private final StatsClient statsClient;
 
     /**
      * Создание и добавление нового ивента в репозиторий (БД).
@@ -58,6 +56,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     public EventDto show(long eventId) {
         var event = eventRepository.findById(eventId).orElseThrow(() ->
                 new NotFoundException("Event with id=" + eventId + " was not found"));
+
+
 
         var dto = eventMapper.map(event);
 

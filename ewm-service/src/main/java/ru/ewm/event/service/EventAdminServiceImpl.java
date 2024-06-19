@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ewm.StatsClient;
 import ru.ewm.event.dto.EventDto;
 import ru.ewm.event.dto.EventParamDto;
 import ru.ewm.event.dto.EventUpdateAdminDto;
@@ -12,9 +11,9 @@ import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
 import ru.ewm.event.specification.EventSpecification;
-import ru.ewm.exception.NotFoundException;
-import ru.ewm.exception.ValidationException;
 import ru.ewm.request.repository.RequestRepository;
+import ru.ewm.util.exception.NotFoundException;
+import ru.ewm.util.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +26,6 @@ public class EventAdminServiceImpl implements EventAdminService {
     private final RequestRepository requestRepository;
     private final EventSpecification eventSpecification;
     private final EventMapper eventMapper;
-    private final StatsClient statsClient;
 
     /**
      *

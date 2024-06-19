@@ -27,10 +27,10 @@ public class EndpointHitController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<List<ViewStats>> index(@RequestParam String start,
-                                                 @RequestParam String end,
+    public ResponseEntity<List<ViewStats>> index(@RequestParam(required = false) String start,
+                                                 @RequestParam(required = false) String end,
                                                  @RequestParam(required = false) List<String> uris,
-                                                 @RequestParam(defaultValue = "false") boolean unique) {
+                                                 @RequestParam(required = false, defaultValue = "false") boolean unique) {
 
         List<ViewStats> viewStats = endpointHitService.index(start, end, uris, unique);
 

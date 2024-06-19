@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.openapitools.jackson.nullable.JsonNullable;
-import ru.ewm.annotation.MainServiceAnnotation.NoEarlierThan2HoursBefore;
+import ru.ewm.util.annotation.MainServiceAnnotation.NoEarlierThan2HoursBefore;
 
 import java.time.LocalDateTime;
 

@@ -1,4 +1,4 @@
-package ru.ewm.exception;
+package ru.ewm.util.exception;
 
 public class ValidationException extends RuntimeException {
     public ValidationException(String message) {

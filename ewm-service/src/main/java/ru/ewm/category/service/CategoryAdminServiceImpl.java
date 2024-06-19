@@ -10,8 +10,8 @@ import ru.ewm.category.mapper.CategoryMapper;
 import ru.ewm.category.repository.CategoryRepository;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
-import ru.ewm.exception.ConditionMismatchException;
-import ru.ewm.exception.NotFoundException;
+import ru.ewm.util.exception.ConditionMismatchException;
+import ru.ewm.util.exception.NotFoundException;
 
 import java.util.List;
 

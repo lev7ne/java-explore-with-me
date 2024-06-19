@@ -17,7 +17,7 @@ import ru.ewm.event.service.EventAdminService;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.ewm.configuration.JacksonConfig.DATE_TIME_FORMAT;
+import static ru.ewm.util.configuration.JacksonConfig.DATE_TIME_FORMAT;
 
 
 @RestController

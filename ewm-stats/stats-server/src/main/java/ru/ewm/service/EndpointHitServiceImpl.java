@@ -22,10 +22,13 @@ public class EndpointHitServiceImpl implements EndpointHitService {
     private final EndpointHitRepository endpointHitRepository;
     private final EndpointHitMapper endpointHitMapper;
 
+    /**
+     *
+     */
     @Override
     @Transactional
-    public EndpointHitDto create(EndpointHitCreateDto endpointHitCreateDto) {
-        var hit = endpointHitMapper.toEntity(endpointHitCreateDto);
+    public EndpointHitDto create(EndpointHitCreateDto createDto) {
+        var hit = endpointHitMapper.toEntity(createDto);
         hit = endpointHitRepository.save(hit);
 
         var dto = endpointHitMapper.toDto(hit);
@@ -33,32 +36,23 @@ public class EndpointHitServiceImpl implements EndpointHitService {
         return dto;
     }
 
+    /**
+     *
+     */
     @Override
     @Transactional(readOnly = true)
-    public List<ViewStats> index(String StringStart, String StringEnd, List<String> uris, boolean unique) {
+    public List<ViewStats> index(String strStart, String strEnd, List<String> uris, boolean unique) {
+        LocalDateTime start = decode(strStart);
+        LocalDateTime end = decode(strEnd);
 
-        LocalDateTime start = decode(StringStart);
-        LocalDateTime end = decode(StringEnd);
-
-        List<ViewStats> viewStats;
-
-        if (uris == null || uris.isEmpty()) {
-            if (unique) {
-                viewStats = endpointHitRepository.readStatsWithUniqueViews(start, end);
-            } else {
-                viewStats = endpointHitRepository.readAllStats(start, end);
-            }
-        } else {
-            if (unique) {
-                viewStats = endpointHitRepository.readStatsWithUrisAndUniqueViews(start, end, uris);
-            } else {
-                viewStats = endpointHitRepository.readStatsWithUris(start, end, uris);
-            }
-        }
+        List<ViewStats> viewStats = endpointHitRepository.readViewStats(start, end, uris, unique);
 
         return viewStats;
     }
 
+    /**
+     *
+     */
     private LocalDateTime decode(String value) {
         return LocalDateTime.parse(URLDecoder.decode(value, StandardCharsets.UTF_8),
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

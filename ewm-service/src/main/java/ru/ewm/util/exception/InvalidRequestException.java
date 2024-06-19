@@ -1,4 +1,4 @@
-package ru.ewm.exception;
+package ru.ewm.util.exception;
 
 public class InvalidRequestException extends RuntimeException {
     public InvalidRequestException(String message) {

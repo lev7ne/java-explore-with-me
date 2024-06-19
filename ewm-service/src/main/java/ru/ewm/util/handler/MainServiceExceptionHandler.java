@@ -1,4 +1,4 @@
-package ru.ewm.handler;
+package ru.ewm.util.handler;
 
 import jakarta.persistence.EntityListeners;
 import lombok.Builder;
@@ -11,10 +11,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.ewm.exception.ConditionMismatchException;
-import ru.ewm.exception.InvalidRequestException;
-import ru.ewm.exception.NotFoundException;
-import ru.ewm.exception.ValidationException;
+import ru.ewm.util.exception.ConditionMismatchException;
+import ru.ewm.util.exception.InvalidRequestException;
+import ru.ewm.util.exception.NotFoundException;
+import ru.ewm.util.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;

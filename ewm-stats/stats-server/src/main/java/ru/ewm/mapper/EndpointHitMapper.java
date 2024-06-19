@@ -2,9 +2,9 @@ package ru.ewm.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
-import ru.ewm.dto.EndpointHit;
 import ru.ewm.dto.EndpointHitCreateDto;
 import ru.ewm.dto.EndpointHitDto;
+import ru.ewm.model.EndpointHit;
 
 
 @Mapper(

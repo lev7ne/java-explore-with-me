@@ -1,4 +1,4 @@
-package ru.ewm.exception;
+package ru.ewm.util.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

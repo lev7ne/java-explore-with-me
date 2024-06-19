@@ -8,7 +8,7 @@ import ru.ewm.category.dto.CategoryDto;
 import ru.ewm.category.mapper.CategoryMapper;
 import ru.ewm.category.model.Category;
 import ru.ewm.category.repository.CategoryRepository;
-import ru.ewm.exception.NotFoundException;
+import ru.ewm.util.exception.NotFoundException;
 
 import java.util.List;
 

@@ -3,7 +3,6 @@ package ru.ewm.compilation.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ewm.StatsClient;
 import ru.ewm.compilation.dto.CompilationCreateDto;
 import ru.ewm.compilation.dto.CompilationDto;
 import ru.ewm.compilation.dto.CompilationUpdateDto;
@@ -13,12 +12,10 @@ import ru.ewm.event.dto.EventShortDto;
 import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
-import ru.ewm.exception.NotFoundException;
 import ru.ewm.request.repository.RequestRepository;
-import ru.ewm.util.helper.ObjectCounter;
+import ru.ewm.util.exception.NotFoundException;
 
 import java.util.List;
-import java.util.Map;
 
 
 @Service
@@ -29,7 +26,6 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     private final EventRepository eventRepository;
     private final CompilationMapper compilationMapper;
     private final EventMapper eventMapper;
-    private final StatsClient statsClient;
 
     /**
      *
@@ -48,15 +44,14 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         compilation = compilation.withEvents(eventRepository.findByIdIn(ids));
         compilation = compilationRepository.save(compilation);
 
-        //TODO: перенести счетчик просмотров из PostgreSQL в Redis
-        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(ids, requestRepository);
-        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(ids, statsClient);
+//        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(ids, requestRepository);
+//        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(ids, statsClient);
 
         List<EventShortDto> eventShortDtos = compilation.getEvents().stream()
                 .map(eventMapper::mapShort)
                 .peek(eventShortDto -> {
-                    eventShortDto.setViews(countViews.get(eventShortDto.getId()));
-                    eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
+//                    eventShortDto.setViews(countViews.get(eventShortDto.getId()));
+//                    eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
                 })
                 .toList();
 
@@ -91,14 +86,14 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         compilation = compilationRepository.save(compilation);
 
 
-        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(ids, requestRepository);
-        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(ids, statsClient);
+//        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(ids, requestRepository);
+//        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(ids, statsClient);
 
         List<EventShortDto> eventShortDtos = events.stream()
                 .map(eventMapper::mapShort)
                 .peek(eventShortDto -> {
-                    eventShortDto.setViews(countViews.getOrDefault(eventShortDto.getId(), 0L));
-                    eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(eventShortDto.getId(), 0L));
+//                    eventShortDto.setViews(countViews.getOrDefault(eventShortDto.getId(), 0L));
+//                    eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(eventShortDto.getId(), 0L));
                 })
                 .toList();
 

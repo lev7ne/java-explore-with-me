@@ -1,4 +1,4 @@
-package ru.ewm.exception;
+package ru.ewm.util.exception;
 
 public class ConditionMismatchException extends RuntimeException {
     public ConditionMismatchException(String message) {
