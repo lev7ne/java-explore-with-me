@@ -8,24 +8,24 @@ import ru.ewm.compilation.dto.CompilationDto;
 import ru.ewm.compilation.dto.CompilationUpdateDto;
 import ru.ewm.compilation.mapper.CompilationMapper;
 import ru.ewm.compilation.repository.CompilationRepository;
-import ru.ewm.event.dto.EventShortDto;
 import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
-import ru.ewm.request.repository.RequestRepository;
+import ru.ewm.stat.service.StatsService;
 import ru.ewm.util.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Service
 @RequiredArgsConstructor
 public class CompilationAdminServiceImpl implements CompilationAdminService {
     private final CompilationRepository compilationRepository;
-    private final RequestRepository requestRepository;
     private final EventRepository eventRepository;
     private final CompilationMapper compilationMapper;
     private final EventMapper eventMapper;
+    private final StatsService statsService;
 
     /**
      *
@@ -33,30 +33,25 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     @Override
     @Transactional
     public CompilationDto create(CompilationCreateDto createDto) {
-        var compilation = compilationMapper.map(createDto);
-        var ids = createDto.getEvents();
+        var compilation = compilationMapper.toEntity(createDto);
+        compilation = compilation.withEvents(eventRepository.findByIdIn(createDto.getEvents()));
 
-        if (ids.isEmpty()) {
+        List<Event> events = compilation.getEvents();
+
+        if (events.isEmpty()) {
             compilation = compilationRepository.save(compilation);
-            return compilationMapper.map(compilation);
+            return compilationMapper.toDto(compilation);
         }
 
-        compilation = compilation.withEvents(eventRepository.findByIdIn(ids));
-        compilation = compilationRepository.save(compilation);
-
-//        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(ids, requestRepository);
-//        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(ids, statsClient);
-
-        List<EventShortDto> eventShortDtos = compilation.getEvents().stream()
-                .map(eventMapper::mapShort)
-                .peek(eventShortDto -> {
-//                    eventShortDto.setViews(countViews.get(eventShortDto.getId()));
-//                    eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
-                })
+        List<Long> ids = events.stream()
+                .map(Event::getId)
                 .toList();
 
-        var dto = compilationMapper.map(compilation);
-        dto.setEvents(eventShortDtos);
+        //TODO: разобраться как в подборку добавить ивенты с просмотрами/реквестами
+        Map<Long, Long> requests = statsService.getConfirmedRequests(ids);
+        Map<Long, Long> views = statsService.getViews(ids);
+
+        var dto = compilationMapper.toDto(compilation);
 
         return dto;
     }
@@ -75,7 +70,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
 
         if (events.isEmpty()) {
             compilation = compilationRepository.save(compilation);
-            return compilationMapper.map(compilation);
+            return compilationMapper.toDto(compilation);
         }
 
         List<Long> ids = events.stream()
@@ -86,19 +81,11 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         compilation = compilationRepository.save(compilation);
 
 
-//        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(ids, requestRepository);
-//        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(ids, statsClient);
+        //TODO: разобраться как в подборку добавить ивенты с просмотрами/реквестами
+        Map<Long, Long> requests = statsService.getConfirmedRequests(ids);
+        Map<Long, Long> views = statsService.getViews(ids);
 
-        List<EventShortDto> eventShortDtos = events.stream()
-                .map(eventMapper::mapShort)
-                .peek(eventShortDto -> {
-//                    eventShortDto.setViews(countViews.getOrDefault(eventShortDto.getId(), 0L));
-//                    eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(eventShortDto.getId(), 0L));
-                })
-                .toList();
-
-        var dto = compilationMapper.map(compilation);
-        dto.setEvents(eventShortDtos);
+        var dto = compilationMapper.toDto(compilation);
 
         return dto;
     }

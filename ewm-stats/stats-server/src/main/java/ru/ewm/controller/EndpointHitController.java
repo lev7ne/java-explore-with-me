@@ -37,4 +37,5 @@ public class EndpointHitController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(viewStats);
     }
+
 }

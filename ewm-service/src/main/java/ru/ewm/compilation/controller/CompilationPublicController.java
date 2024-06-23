@@ -19,7 +19,6 @@ public class CompilationPublicController {
     private final CompilationPublicService compilationPublicService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<CompilationDto>> index(@RequestParam(required = false) boolean pinned,
                                                       @RequestParam(defaultValue = "0") @Min(0) int from,
                                                       @RequestParam(defaultValue = "10") @Min(1) int size) {

@@ -11,30 +11,31 @@ import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
 import ru.ewm.event.specification.EventSpecification;
-import ru.ewm.request.repository.RequestRepository;
+import ru.ewm.stat.service.StatsService;
 import ru.ewm.util.exception.NotFoundException;
 import ru.ewm.util.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
 @RequiredArgsConstructor
 public class EventAdminServiceImpl implements EventAdminService {
     private final EventRepository eventRepository;
-    private final RequestRepository requestRepository;
     private final EventSpecification eventSpecification;
     private final EventMapper eventMapper;
+    private final StatsService statsService;
 
     /**
      *
      */
     @Override
     @Transactional
-    public EventDto update(long eventId, EventUpdateAdminDto updateDto) {
-        var event = eventRepository.findById(eventId).orElseThrow(() ->
-                new NotFoundException("Event with id=" + eventId + " was not found"));
+    public EventDto update(long id, EventUpdateAdminDto updateDto) {
+        var event = eventRepository.findById(id).orElseThrow(() ->
+                new NotFoundException("Event with id=" + id + " was not found"));
 
         var stateAction = event.getState();
         var action = updateDto.getStateAction();
@@ -57,10 +58,12 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
 
         eventMapper.update(updateDto, event);
-        var dto = eventMapper.map(eventRepository.save(event));
+        event = eventRepository.save(event);
 
-//        dto.setViews(ObjectCounter.countViewsById(eventId, statsClient));
-//        dto.setConfirmedRequests(requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED));
+        Map<Long, Long> requests = statsService.getConfirmedRequests(List.of(id));
+        Map<Long, Long> views = statsService.getViews(List.of(id));
+
+        var dto = eventMapper.toDto(event, requests, views);
 
         return dto;
     }
@@ -78,21 +81,15 @@ public class EventAdminServiceImpl implements EventAdminService {
             return List.of();
         }
 
-//        List<Long> eventIds = events.stream()
-//                .map(Event::getId)
-//                .toList();
+        List<Long> ids = events.stream()
+                .map(Event::getId)
+                .toList();
 
-//        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
-//        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
+        Map<Long, Long> requests = statsService.getConfirmedRequests(ids);
+        Map<Long, Long> views = statsService.getViews(ids);
 
-        var dtos = events.stream()
-                .map(eventMapper::map)
-//      TODO: добавить информацию о подтвержденных запросах и просмотрах
-
-//                .peek(eventShortDto -> {
-//                    eventShortDto.setViews(countViews.getOrDefault(eventShortDto.getId(), 0L));
-//                    eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(eventShortDto.getId(), 0L));
-//                })
+        List<EventDto> dtos = events.stream()
+                .map(event -> eventMapper.toDto(event, views, requests))
                 .toList();
 
         return dtos;

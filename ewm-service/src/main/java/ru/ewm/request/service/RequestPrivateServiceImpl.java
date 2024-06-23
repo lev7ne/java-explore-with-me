@@ -30,7 +30,6 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
     @Override
     @Transactional
     public ParticipationRequestDto create(long requesterId, long eventId) {
-
         // нельзя добавить повторный запрос (Ожидается код ошибки 409)
         if (requestRepository.findByRequesterIdAndEventId(requesterId, eventId).isPresent()) {
             throw new ConditionMismatchException("User's request for the event already exists");
@@ -49,7 +48,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
             throw new ConditionMismatchException("The event must be published");
         }
 
-        //если у события достигнут лимит запросов на участие - необходимо вернуть ошибку (Ожидается код ошибки 409)
+        // если у события достигнут лимит запросов на участие - необходимо вернуть ошибку (Ожидается код ошибки 409)
         var count = requestRepository.countByEventIdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
         if (event.getParticipantLimit() != 0) {
             if (count >= event.getParticipantLimit()) {
@@ -63,14 +62,15 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
         var request = Request.builder()
                 .requester(requester)
                 .event(event)
-                // если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного
+                // если для события отключена пре-модерация запросов на участие,
+                // то запрос должен автоматически перейти в состояние подтвержденного
                 .requestStatus(
                         event.getParticipantLimit() == 0 || !event.isRequestModeration() ?
                                 Request.RequestStatus.CONFIRMED : Request.RequestStatus.PENDING)
                 .build();
 
         request = requestRepository.save(request);
-        var dto = requestMapper.map(request);
+        var dto = requestMapper.toDto(request);
 
         return dto;
     }
@@ -88,7 +88,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
         }
 
         List<ParticipationRequestDto> dtos = requests.stream()
-                .map(requestMapper::map)
+                .map(requestMapper::toDto)
                 .toList();
 
         return dtos;
@@ -106,7 +106,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
         request.setRequestStatus(Request.RequestStatus.CANCELED);
 
         request = requestRepository.save(request);
-        var dto = requestMapper.map(request);
+        var dto = requestMapper.toDto(request);
 
         return dto;
     }

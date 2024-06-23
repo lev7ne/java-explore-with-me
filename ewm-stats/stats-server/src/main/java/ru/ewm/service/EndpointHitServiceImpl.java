@@ -41,17 +41,22 @@ public class EndpointHitServiceImpl implements EndpointHitService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<ViewStats> index(String strStart, String strEnd, List<String> uris, boolean unique) {
-        LocalDateTime start = decode(strStart);
-        LocalDateTime end = decode(strEnd);
+    public List<ViewStats> index(String start, String end, List<String> uris, boolean unique) {
 
-        List<ViewStats> viewStats = endpointHitRepository.readViewStats(start, end, uris, unique);
+        if (start != null && end != null) {
+            LocalDateTime startTime = decode(start);
+            LocalDateTime endTime = decode(end);
+            return endpointHitRepository.readViewStats(startTime, endTime, uris, unique);
+        }
 
-        return viewStats;
+        return endpointHitRepository.readViewStats(uris, unique);
     }
 
     /**
+     * Расшифровка и преобразование строки (String) в дату и временя (LocalDateTime).
      *
+     * @param value - значение строки даты
+     * @return - преобразованное в LocalDateTime значение
      */
     private LocalDateTime decode(String value) {
         return LocalDateTime.parse(URLDecoder.decode(value, StandardCharsets.UTF_8),

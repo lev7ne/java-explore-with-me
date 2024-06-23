@@ -41,7 +41,7 @@ public class StatsClient {
      *
      */
     public List<ViewStats> getViews(List<String> uris) {
-        Map<String, String> parameters = Map.of("uris", String.join(",", uris));
+        Map<String, Object> parameters = Map.of("uris", String.join(",", uris));
 
         ResponseEntity<List<ViewStats>> response = rest.exchange
                 (

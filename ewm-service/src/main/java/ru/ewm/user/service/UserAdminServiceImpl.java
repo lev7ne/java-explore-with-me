@@ -22,22 +22,22 @@ public class UserAdminServiceImpl implements UserAdminService {
     /**
      * Создание и добавление нового пользователя в репозиторий (БД).
      *
-     * @param createDto (DTO для создания нового пользователя)
-     * @return UserDto (DTO возвращаемый пользователю)
+     * @param createDto - DTO для создания нового пользователя
+     * @return UserDto - DTO возвращаемый пользователю
      */
     @Override
     @Transactional
     public UserDto create(UserCreateDto createDto) {
-        var user = userMapper.map(createDto);
+        var user = userMapper.toEntity(createDto);
         user = userRepository.save(user);
 
-        return userMapper.map(user);
+        return userMapper.toDto(user);
     }
 
     /**
      * Удаление пользователя из репозитория (БД).
      *
-     * @param id (идентификатор пользователя)
+     * @param id - идентификатор пользователя
      */
     @Override
     @Transactional
@@ -49,9 +49,9 @@ public class UserAdminServiceImpl implements UserAdminService {
      * Возвращает информацию обо всех пользователях, либо о конкретных (ids).
      * В случае, если по заданным фильтрам не найдено ни одного пользователя, возвращает пустой список.
      *
-     * @param ids      (указанные идентификаторы пользователей)
-     * @param pageable (параметры ограничения выборки)
-     * @return List<UserDto> (список DTO возвращаемых пользователю)
+     * @param ids      - указанные идентификаторы пользователей
+     * @param pageable - параметры ограничения выборки
+     * @return List<UserDto> - список DTO возвращаемых пользователю
      */
     @Override
     @Transactional(readOnly = true)
@@ -65,7 +65,7 @@ public class UserAdminServiceImpl implements UserAdminService {
         }
 
         List<UserDto> dtos = users.stream()
-                .map(userMapper::map)
+                .map(userMapper::toDto)
                 .toList();
 
         return dtos;

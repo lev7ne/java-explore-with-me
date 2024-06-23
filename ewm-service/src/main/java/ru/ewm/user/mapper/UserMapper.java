@@ -12,9 +12,9 @@ import ru.ewm.user.model.User;
         componentModel = MappingConstants.ComponentModel.SPRING
 )
 public abstract class UserMapper {
-    public abstract User map(UserCreateDto dto);
+    public abstract User toEntity(UserCreateDto dto);
 
-    public abstract UserDto map(User model);
+    public abstract UserDto toDto(User model);
 
     public abstract UserShortDto mapShort(User model);
 }

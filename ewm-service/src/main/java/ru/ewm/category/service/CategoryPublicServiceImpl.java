@@ -36,7 +36,7 @@ public class CategoryPublicServiceImpl implements CategoryPublicService {
         }
 
         List<CategoryDto> dtos = categories.stream()
-                .map(categoryMapper::map)
+                .map(categoryMapper::toDto)
                 .toList();
 
         return dtos;
@@ -55,6 +55,6 @@ public class CategoryPublicServiceImpl implements CategoryPublicService {
         var category = categoryRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Category with id=" + id + " was not found"));
 
-        return categoryMapper.map(category);
+        return categoryMapper.toDto(category);
     }
 }

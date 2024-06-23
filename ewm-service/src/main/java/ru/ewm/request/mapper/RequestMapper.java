@@ -15,5 +15,5 @@ public abstract class RequestMapper {
     @Mapping(target = "created", source = "createDate")
     @Mapping(target = "event", source = "event.id")
     @Mapping(target = "status", source = "requestStatus")
-    public abstract ParticipationRequestDto map(Request model);
+    public abstract ParticipationRequestDto toDto(Request model);
 }

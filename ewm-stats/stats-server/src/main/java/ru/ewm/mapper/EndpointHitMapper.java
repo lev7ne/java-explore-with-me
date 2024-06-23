@@ -11,7 +11,6 @@ import ru.ewm.model.EndpointHit;
         componentModel = MappingConstants.ComponentModel.SPRING
 )
 public abstract class EndpointHitMapper {
-
     public abstract EndpointHit toEntity(EndpointHitCreateDto dto);
 
     public abstract EndpointHitDto toDto(EndpointHit model);

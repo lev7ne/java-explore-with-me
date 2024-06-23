@@ -18,10 +18,10 @@ import ru.ewm.event.mapper.EventMapper;
 public abstract class CompilationMapper {
     @Mapping(target = "events", ignore = true)
     @Mapping(target = "pinned", source = "pinned", defaultValue = "false")
-    public abstract Compilation map(CompilationCreateDto dto);
+    public abstract Compilation toEntity(CompilationCreateDto dto);
 
     @Mapping(target = "events", ignore = true)
-    public abstract CompilationDto map(Compilation model);
+    public abstract CompilationDto toDto(Compilation model);
 
     @Mapping(target = "events", ignore = true)
     public abstract void update(CompilationUpdateDto dto, @MappingTarget Compilation model);

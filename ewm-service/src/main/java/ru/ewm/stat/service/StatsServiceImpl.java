@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StatsServiceImpl implements StatsService {
     private final StatsClient statsClient;
+    private final RequestRepository requestRepository;
 
     /**
      *
@@ -26,7 +27,6 @@ public class StatsServiceImpl implements StatsService {
     @Override
     @Transactional
     public void addView(HttpServletRequest request) {
-
         var dto = EndpointHitCreateDto.builder()
                 .app("ewm-main-service")
                 .uri(request.getRequestURI())
@@ -63,15 +63,14 @@ public class StatsServiceImpl implements StatsService {
     /**
      *
      */
+    @Override
     public Map<Long, Long> getConfirmedRequests(List<Long> ids) {
-        return null;
-    }
-
-    //FIXME: переделать
-    public Map<Long, Long> getConfirmedRequests(List<Long> eventIds, RequestRepository repository) {
-        List<Request> confirmedRequests = repository.getAllByRequestStatusAndEvent_IdIn(Request.RequestStatus.CONFIRMED, eventIds);
-        return confirmedRequests.stream()
+        List<Request> confirmedRequests = requestRepository
+                .findAllByRequestStatusAndEventIdIn(Request.RequestStatus.CONFIRMED, ids);
+        Map<Long, Long> pair = confirmedRequests.stream()
                 .collect(Collectors.groupingBy(request -> request.getEvent().getId(), Collectors.counting()));
+
+        return pair;
     }
 
     /**

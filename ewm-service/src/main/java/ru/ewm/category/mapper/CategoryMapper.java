@@ -13,9 +13,9 @@ import ru.ewm.category.model.Category;
         componentModel = MappingConstants.ComponentModel.SPRING
 )
 public abstract class CategoryMapper {
-    public abstract Category map(CategoryCreateDto dto);
+    public abstract Category toEntity(CategoryCreateDto dto);
 
-    public abstract CategoryDto map(Category model);
+    public abstract CategoryDto toDto(Category model);
 
     public abstract void update(CategoryUpdateDto dto, @MappingTarget Category model);
 }

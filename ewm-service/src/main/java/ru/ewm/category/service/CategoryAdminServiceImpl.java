@@ -32,10 +32,10 @@ public class CategoryAdminServiceImpl implements CategoryAdminService {
     @Override
     @Transactional
     public CategoryDto create(CategoryCreateDto createDto) {
-        var category = categoryMapper.map(createDto);
+        var category = categoryMapper.toEntity(createDto);
         category = categoryRepository.save(category);
 
-        return categoryMapper.map(category);
+        return categoryMapper.toDto(category);
     }
 
     /**
@@ -55,7 +55,7 @@ public class CategoryAdminServiceImpl implements CategoryAdminService {
         categoryMapper.update(updateDto, category);
         category = categoryRepository.save(category);
 
-        return categoryMapper.map(category);
+        return categoryMapper.toDto(category);
     }
 
     /**

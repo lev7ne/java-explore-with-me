@@ -1,10 +1,6 @@
 package ru.ewm.handler;
 
-import jakarta.persistence.EntityListeners;
-import lombok.Builder;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -17,7 +13,7 @@ import java.util.stream.Collectors;
 
 
 @RestControllerAdvice
-public class StatServerExceptionHandler {
+public class StatsServerExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         var reason = e.getBindingResult()
@@ -66,14 +62,5 @@ public class StatServerExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(apiError);
-    }
-
-    @EntityListeners(AuditingEntityListener.class)
-    @Builder
-    public static class ApiError {
-        private String reason;
-        private String message;
-        @CreatedDate
-        private String timestamp;
     }
 }

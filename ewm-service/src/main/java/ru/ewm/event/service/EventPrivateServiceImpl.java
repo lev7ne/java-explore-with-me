@@ -17,11 +17,13 @@ import ru.ewm.request.dto.RequestUpdateDto;
 import ru.ewm.request.mapper.RequestMapper;
 import ru.ewm.request.model.Request;
 import ru.ewm.request.repository.RequestRepository;
+import ru.ewm.stat.service.StatsService;
 import ru.ewm.util.exception.ConditionMismatchException;
 import ru.ewm.util.exception.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -31,6 +33,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     private final RequestRepository requestRepository;
     private final EventMapper eventMapper;
     private final RequestMapper requestMapper;
+    private final StatsService statsService;
 
     /**
      * Создание и добавление нового ивента в репозиторий (БД).
@@ -42,10 +45,10 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     @Transactional
     public EventDto create(EventCreateDto createDto, long initiatorId) {
 
-        var event = eventMapper.map(createDto, initiatorId);
+        var event = eventMapper.toEntity(createDto, initiatorId);
         event = eventRepository.save(event);
 
-        return eventMapper.map(event);
+        return eventMapper.toDto(event);
     }
 
     /**
@@ -53,16 +56,14 @@ public class EventPrivateServiceImpl implements EventPrivateService {
      */
     @Override
     @Transactional(readOnly = true)
-    public EventDto show(long eventId) {
-        var event = eventRepository.findById(eventId).orElseThrow(() ->
-                new NotFoundException("Event with id=" + eventId + " was not found"));
+    public EventDto show(long id) {
+        var event = eventRepository.findById(id).orElseThrow(() ->
+                new NotFoundException("Event with id=" + id + " was not found"));
 
+        Map<Long, Long> requests = statsService.getConfirmedRequests(List.of(id));
+        Map<Long, Long> views = statsService.getViews(List.of(id));
 
-
-        var dto = eventMapper.map(event);
-
-//        dto.setViews(ObjectCounter.countViewsById(eventId, statsClient));
-//        dto.setConfirmedRequests(requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED));
+        var dto = eventMapper.toDto(event, requests, views);
 
         return dto;
     }
@@ -88,10 +89,11 @@ public class EventPrivateServiceImpl implements EventPrivateService {
 
         eventMapper.update(updateDto, event);
         event = eventRepository.save(event);
-        var dto = eventMapper.map(event);
 
-//        dto.setViews(ObjectCounter.countViewsById(id, statsClient));
-//        dto.setConfirmedRequests(requestRepository.countByEvent_IdAndRequestStatus(id, Request.RequestStatus.CONFIRMED));
+        Map<Long, Long> requests = statsService.getConfirmedRequests(List.of(id));
+        Map<Long, Long> views = statsService.getViews(List.of(id));
+
+        var dto = eventMapper.toDto(event, requests, views);
 
         return dto;
     }
@@ -105,23 +107,21 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         List<Event> events = eventRepository.findAllByInitiatorId(userId, pageable);
 
         if (events.isEmpty()) {
-            return new ArrayList<>();
+            return List.of();
         }
 
-//        List<Long> eventIds = events.stream()
-//                .map(Event::getId)
-//                .collect(Collectors.toList());
-
-//        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
-//        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
-
-        return events.stream()
-                .map(eventMapper::mapShort)
-//                .peek(eventShortDto -> {
-//                    eventShortDto.setViews(countViews.getOrDefault(eventShortDto.getId(), 0L));
-//                    eventShortDto.setConfirmedRequests(confirmedRequests.getOrDefault(eventShortDto.getId(), 0L));
-//                })
+        List<Long> ids = events.stream()
+                .map(Event::getId)
                 .toList();
+
+        Map<Long, Long> requests = statsService.getConfirmedRequests(ids);
+        Map<Long, Long> views = statsService.getViews(ids);
+
+        List<EventShortDto> dtos = events.stream()
+                .map(event -> eventMapper.toShortDto(event, views, requests))
+                .toList();
+
+        return dtos;
     }
 
     /**
@@ -137,71 +137,11 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         }
 
         var dtos = requests.stream()
-                .map(requestMapper::map)
+                .map(requestMapper::toDto)
                 .toList();
 
         return dtos;
     }
-
-//    /**
-//     *
-//     */
-//    @Override
-//    @Transactional
-//    public RequestDto update(RequestUpdateDto updateDto, long userId, long eventId) {
-//        var event = eventRepository.findById(eventId).orElseThrow(() ->
-//                new NotFoundException("Event with id=" + eventId + " was not found"));
-//
-//        List<Request> requests = requestRepository.findRequestByIdIn(updateDto.getRequestIds());
-//
-//        for (Request request : requests) {
-//            if (request.getRequestStatus() != Request.RequestStatus.PENDING) {
-//                throw new ConditionMismatchException("Request must have status PENDING");
-//            }
-//        }
-//
-//        List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
-//        List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
-//
-//        if (updateDto.getStatus().toString().equals(Request.RequestStatus.REJECTED.toString())) {
-//            rejectedRequests = requests.stream()
-//                    .map(request -> {
-//                        request.setRequestStatus(Request.RequestStatus.REJECTED);
-//                        requestRepository.save(request);
-//                        return requestMapper.map(request);
-//                    })
-//                    .collect(Collectors.toList());
-//        }
-//
-//        var count = requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
-//
-//        if (updateDto.getStatus().toString().equals(Request.RequestStatus.CONFIRMED.toString())) {
-//            if (event.getParticipantLimit() == 0 || !event.isRequestModeration()) {
-//                confirmedRequests = requests.stream()
-//                        .map(request -> {
-//                            request.setRequestStatus(Request.RequestStatus.CONFIRMED);
-//                            requestRepository.save(request);
-//                            return requestMapper.map(request);
-//                        })
-//                        .collect(Collectors.toList());
-//            } else if (count >= event.getParticipantLimit()) {
-//                throw new ConditionMismatchException("The participant limit has been reached");
-//            }
-//
-//            for (Request request : requests) {
-//                if (count < event.getParticipantLimit()) {
-//                    request.setRequestStatus(Request.RequestStatus.CONFIRMED);
-//                    confirmedRequests.add(requestMapper.map(request));
-//                } else {
-//                    request.setRequestStatus(Request.RequestStatus.REJECTED);
-//                    rejectedRequests.add(requestMapper.map(request));
-//                }
-//                requestRepository.save(request);
-//            }
-//        }
-//
-//        return new RequestDto(confirmedRequests, rejectedRequests);
-//    }
 
     @Override
     @Transactional
@@ -223,33 +163,28 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         RequestUpdateDto.RequestStatus newStatus = updateDto.getStatus();
         long confirmedCount = requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
 
-        // Process based on the new status
         if (newStatus == RequestUpdateDto.RequestStatus.REJECTED) {
-            // Reject all requests
             for (Request request : requests) {
                 request.setRequestStatus(Request.RequestStatus.REJECTED);
                 requestRepository.save(request);
-                rejectedRequests.add(requestMapper.map(request));
+                rejectedRequests.add(requestMapper.toDto(request));
             }
         } else if (newStatus == RequestUpdateDto.RequestStatus.CONFIRMED) {
-            // Check participant limit and moderation status
             if (event.getParticipantLimit() == 0 || !event.isRequestModeration()) {
-                // Confirm all requests if no limit or moderation
                 for (Request request : requests) {
                     request.setRequestStatus(Request.RequestStatus.CONFIRMED);
                     requestRepository.save(request);
-                    confirmedRequests.add(requestMapper.map(request));
+                    confirmedRequests.add(requestMapper.toDto(request));
                 }
             } else {
-                // Confirm requests within limit and reject the rest
                 for (Request request : requests) {
                     if (confirmedCount < event.getParticipantLimit()) {
                         request.setRequestStatus(Request.RequestStatus.CONFIRMED);
-                        confirmedRequests.add(requestMapper.map(request));
+                        confirmedRequests.add(requestMapper.toDto(request));
                         confirmedCount++;
                     } else {
                         request.setRequestStatus(Request.RequestStatus.REJECTED);
-                        rejectedRequests.add(requestMapper.map(request));
+                        rejectedRequests.add(requestMapper.toDto(request));
                     }
                     requestRepository.save(request);
                 }

@@ -8,6 +8,8 @@ import ru.ewm.event.model.Event;
 import ru.ewm.user.mapper.UserMapper;
 import ru.ewm.util.mapper.JsonNullableMapper;
 
+import java.util.Map;
+
 
 @Mapper(
         uses = {JsonNullableMapper.class,
@@ -27,19 +29,47 @@ public abstract class EventMapper {
     @Mapping(target = "lon", source = "dto.location.lon")
     @Mapping(target = "paid", defaultValue = "false")
     @Mapping(target = "participantLimit", defaultValue = "0")
-
     //FIXME: У каждого созданного события requestModeration должно принять значение по умолчанию (true), почему не работает?
     @Mapping(target = "requestModeration", source = "dto.requestModeration", defaultValue = "true")
-    public abstract Event map(EventCreateDto dto, Long initiatorId);
+    public abstract Event toEntity(EventCreateDto dto, Long initiatorId);
 
     @Mapping(target = "category", source = "model.category")
     @Mapping(target = "initiator", source = "model.initiator")
     @Mapping(target = "location.lat", source = "model.lat")
     @Mapping(target = "location.lon", source = "model.lon")
     @Mapping(target = "createdOn", source = "model.createdDate")
-    public abstract EventDto map(Event model);
+    public abstract EventDto toDto(Event model);
 
-    public abstract EventShortDto mapShort(Event model);
+    @Mapping(target = "category", source = "model.category")
+    @Mapping(target = "initiator", source = "model.initiator")
+    @Mapping(target = "location.lat", source = "model.lat")
+    @Mapping(target = "location.lon", source = "model.lon")
+    @Mapping(target = "createdOn", source = "model.createdDate")
+    @Mapping(target = "confirmedRequests", ignore = true)
+    @Mapping(target = "views", ignore = true)
+    public abstract EventDto toDto(Event model, Map<Long, Long> confirmedRequests, Map<Long, Long> views);
+
+    @AfterMapping
+    public void mapViewsAndConfirmedRequests(@MappingTarget EventDto dto,
+                                             @Context Map<Long, Long> confirmedRequests,
+                                             @Context Map<Long, Long> views) {
+        dto.setConfirmedRequests(confirmedRequests.getOrDefault(dto.getId(), 0L));
+        dto.setViews(views.getOrDefault(dto.getId(), 0L));
+    }
+
+    public abstract EventShortDto toShortDto(Event model);
+
+    @Mapping(target = "views", ignore = true)
+    @Mapping(target = "confirmedRequests", ignore = true)
+    public abstract EventShortDto toShortDto(Event model, Map<Long, Long> confirmedRequests, Map<Long, Long> views);
+
+    @AfterMapping
+    public void mapViewsAndConfirmedRequests(@MappingTarget EventShortDto dto,
+                                             @Context Map<Long, Long> confirmedRequests,
+                                             @Context Map<Long, Long> views) {
+        dto.setConfirmedRequests(confirmedRequests.getOrDefault(dto.getId(), 0L));
+        dto.setViews(views.getOrDefault(dto.getId(), 0L));
+    }
 
     @Mapping(target = "category.id", source = "dto.category")
     public abstract void update(EventUpdateUserDto dto, @MappingTarget Event model);
