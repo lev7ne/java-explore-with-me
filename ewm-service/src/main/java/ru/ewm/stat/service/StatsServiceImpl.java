@@ -45,8 +45,7 @@ public class StatsServiceImpl implements StatsService {
         List<String> uris = ids.stream()
                 .map(id -> "/events/" + id)
                 .toList();
-
-        List<ViewStats> stats = statsClient.getViews(uris);
+        List<ViewStats> stats = statsClient.getViews(uris, true);
 
         Map<Long, Long> pair = stats.stream()
                 .filter(stat -> isValidUri(stat.getUri()))

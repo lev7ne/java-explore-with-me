@@ -1,12 +1,14 @@
 package ru.ewm.event.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ewm.event.dto.EventDto;
 import ru.ewm.event.dto.EventParamDto;
 import ru.ewm.event.dto.EventUpdateAdminDto;
+import ru.ewm.event.mapper.EventContext;
 import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
@@ -19,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventAdminServiceImpl implements EventAdminService {
@@ -40,30 +42,42 @@ public class EventAdminServiceImpl implements EventAdminService {
         var stateAction = event.getState();
         var action = updateDto.getStateAction();
 
-        switch (stateAction) {
-            case CANCELED:
-            case PUBLISHED:
-                throw new ValidationException("Cannot publish or reject the event because it's not " +
-                        "in the right state: " + event.getState());
-            case PENDING:
-                switch (action) {
-                    case PUBLISH_EVENT:
-                        event.setState(Event.State.PUBLISHED);
-                        event.setPublishedOn(LocalDateTime.now());
-                        break;
-                    case REJECT_EVENT:
-                        event.setState(Event.State.CANCELED);
-                        break;
-                }
+        if (stateAction != null && action != null) {
+            switch (stateAction) {
+                case CANCELED:
+                case PUBLISHED:
+                    throw new ValidationException("Cannot publish or reject the event because it's not " +
+                            "in the right state: " + event.getState());
+                case PENDING:
+                    log.info("case action={}", action);
+                    switch (action) {
+                        case PUBLISH_EVENT:
+                            log.info("case action={}", action);
+                            event.setState(Event.State.PUBLISHED);
+                            event.setPublishedOn(LocalDateTime.now());
+                            break;
+                        case REJECT_EVENT:
+                            log.info("case action={}", action);
+                            event.setState(Event.State.CANCELED);
+                            break;
+                        default:
+                            log.info("case State.Action: default");
+                    }
+                default:
+                    log.info("case Action: default");
+            }
+            log.info("После прохождения всех switch-case.");
         }
 
         eventMapper.update(updateDto, event);
         event = eventRepository.save(event);
 
-        Map<Long, Long> requests = statsService.getConfirmedRequests(List.of(id));
+        //TODO: преобразовать в отдельный метод в StatsService
+        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(List.of(id));
         Map<Long, Long> views = statsService.getViews(List.of(id));
 
-        var dto = eventMapper.toDto(event, requests, views);
+        EventContext context = new EventContext(confirmedRequests, views);
+        var dto = eventMapper.toDto(event, context);
 
         return dto;
     }
@@ -85,11 +99,13 @@ public class EventAdminServiceImpl implements EventAdminService {
                 .map(Event::getId)
                 .toList();
 
-        Map<Long, Long> requests = statsService.getConfirmedRequests(ids);
+        //TODO: преобразовать в отдельный метод в StatsService
+        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(ids);
         Map<Long, Long> views = statsService.getViews(ids);
 
+        EventContext context = new EventContext(confirmedRequests, views);
         List<EventDto> dtos = events.stream()
-                .map(event -> eventMapper.toDto(event, views, requests))
+                .map(event -> eventMapper.toDto(event, context))
                 .toList();
 
         return dtos;

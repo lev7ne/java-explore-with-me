@@ -23,5 +23,5 @@ public interface EventPrivateService {
 
     List<ParticipationRequestDto> index(long userId, long eventId);
 
-    RequestDto update(RequestUpdateDto requestUpdateDto, long userId, long eventId);
+    RequestDto updateStatusRequests(RequestUpdateDto requestUpdateDto, long eventId);
 }

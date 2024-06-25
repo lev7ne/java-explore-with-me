@@ -3,6 +3,7 @@ package ru.ewm.event.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.util.List;
 import static ru.ewm.util.configuration.JacksonConfig.DATE_TIME_FORMAT;
 
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/admin/events")
 @RequiredArgsConstructor
@@ -36,6 +38,10 @@ public class EventAdminController {
             @RequestParam(defaultValue = "0") @Min(0) int from,
             @RequestParam(defaultValue = "10") @Min(1) int size
     ) {
+
+        log.info("Получен GET-запрос поиска с параметрами: " +
+                        "users={}, categories={}, rangeStart={}, rangeEnd={}, states={}, from={}, size={}",
+                users, categories, rangeStart, rangeEnd, states, from, size);
 
         var param = EventParamDto.builder()
                 .rangeStart(rangeStart)
@@ -56,6 +62,9 @@ public class EventAdminController {
     @PatchMapping(value = "/{id}")
     public ResponseEntity<EventDto> update(@Valid @RequestBody EventUpdateAdminDto updateDto,
                                            @PathVariable long id) {
+
+        log.info("Получен PATCH-запрос на обновление события администратором: " +
+                "eventId={}, eventUpdateAdminDto={}", id, updateDto);
 
         var dto = eventAdminService.update(id, updateDto);
 

@@ -1,6 +1,7 @@
 package ru.ewm.event.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +9,7 @@ import ru.ewm.event.dto.EventCreateDto;
 import ru.ewm.event.dto.EventDto;
 import ru.ewm.event.dto.EventShortDto;
 import ru.ewm.event.dto.EventUpdateUserDto;
+import ru.ewm.event.mapper.EventContext;
 import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventPrivateServiceImpl implements EventPrivateService {
@@ -60,10 +63,12 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         var event = eventRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Event with id=" + id + " was not found"));
 
-        Map<Long, Long> requests = statsService.getConfirmedRequests(List.of(id));
+        //TODO: преобразовать в отдельный метод в StatsService
+        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(List.of(id));
         Map<Long, Long> views = statsService.getViews(List.of(id));
 
-        var dto = eventMapper.toDto(event, requests, views);
+        EventContext context = new EventContext(confirmedRequests, views);
+        var dto = eventMapper.toDto(event, context);
 
         return dto;
     }
@@ -90,10 +95,12 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         eventMapper.update(updateDto, event);
         event = eventRepository.save(event);
 
-        Map<Long, Long> requests = statsService.getConfirmedRequests(List.of(id));
+        //TODO: преобразовать в отдельный метод в StatsService
+        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(List.of(id));
         Map<Long, Long> views = statsService.getViews(List.of(id));
 
-        var dto = eventMapper.toDto(event, requests, views);
+        EventContext context = new EventContext(confirmedRequests, views);
+        var dto = eventMapper.toDto(event, context);
 
         return dto;
     }
@@ -114,11 +121,13 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                 .map(Event::getId)
                 .toList();
 
+        //TODO: преобразовать в отдельный метод в StatsService
         Map<Long, Long> requests = statsService.getConfirmedRequests(ids);
         Map<Long, Long> views = statsService.getViews(ids);
 
+        EventContext context = new EventContext(requests, views);
         List<EventShortDto> dtos = events.stream()
-                .map(event -> eventMapper.toShortDto(event, views, requests))
+                .map(event -> eventMapper.toShortDto(event, context))
                 .toList();
 
         return dtos;
@@ -143,41 +152,48 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         return dtos;
     }
 
+    /**
+     *
+     */
     @Override
     @Transactional
-    public RequestDto update(RequestUpdateDto updateDto, long userId, long eventId) {
-        var event = eventRepository.findById(eventId).orElseThrow(() ->
-                new NotFoundException("Event with id=" + eventId + " was not found"));
+    public RequestDto updateStatusRequests(RequestUpdateDto updateDto, long id) {
+        log.info("Поиск события по id={}", id);
+        var event = eventRepository.findById(id).orElseThrow(() ->
+                new NotFoundException("Event with id=" + id + " was not found"));
 
+        log.info("Поиск запросов по ids={}", updateDto.getRequestIds());
         List<Request> requests = requestRepository.findRequestByIdIn(updateDto.getRequestIds());
 
+        log.info("Проверка статуса каждого запроса");
         for (Request request : requests) {
             if (request.getRequestStatus() != Request.RequestStatus.PENDING) {
                 throw new ConditionMismatchException("Request must have status PENDING");
             }
         }
 
+        log.info("Подготовка списков для подтвержденных и отклоненных запросов");
         List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
         List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
 
         RequestUpdateDto.RequestStatus newStatus = updateDto.getStatus();
-        long confirmedCount = requestRepository.countByEvent_IdAndRequestStatus(eventId, Request.RequestStatus.CONFIRMED);
+        long confirmedCount = requestRepository.countByEventIdAndRequestStatus(id, Request.RequestStatus.CONFIRMED);
 
         if (newStatus == RequestUpdateDto.RequestStatus.REJECTED) {
+            log.info("Обработка отклонения запросов");
             for (Request request : requests) {
                 request.setRequestStatus(Request.RequestStatus.REJECTED);
-                requestRepository.save(request);
                 rejectedRequests.add(requestMapper.toDto(request));
             }
         } else if (newStatus == RequestUpdateDto.RequestStatus.CONFIRMED) {
-            if (event.getParticipantLimit() == 0 || !event.isRequestModeration()) {
-                for (Request request : requests) {
+            log.info("Обработка подтверждения запросов");
+            for (Request request : requests) {
+                if (event.getParticipantLimit() == 0 || !event.isRequestModeration()) {
+                    log.info("Подтверждение без учета лимита и модерации");
                     request.setRequestStatus(Request.RequestStatus.CONFIRMED);
-                    requestRepository.save(request);
                     confirmedRequests.add(requestMapper.toDto(request));
-                }
-            } else {
-                for (Request request : requests) {
+                } else {
+                    log.info("Подтверждение с учетом лимита");
                     if (confirmedCount < event.getParticipantLimit()) {
                         request.setRequestStatus(Request.RequestStatus.CONFIRMED);
                         confirmedRequests.add(requestMapper.toDto(request));
@@ -186,10 +202,12 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                         request.setRequestStatus(Request.RequestStatus.REJECTED);
                         rejectedRequests.add(requestMapper.toDto(request));
                     }
-                    requestRepository.save(request);
                 }
             }
         }
+
+        log.info("Сохранение всех изменений в репозитории");
+        requestRepository.saveAll(requests);
 
         return new RequestDto(confirmedRequests, rejectedRequests);
     }

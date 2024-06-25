@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.openapitools.jackson.nullable.JsonNullable;
 import ru.ewm.util.annotation.MainServiceAnnotation.NoEarlierThan2HoursBefore;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@ToString
 public class EventUpdateAdminDto {
     @Size(min = 3, max = 120)
     private JsonNullable<String> title;

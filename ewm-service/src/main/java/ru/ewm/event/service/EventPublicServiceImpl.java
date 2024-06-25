@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.ewm.event.dto.EventDto;
 import ru.ewm.event.dto.EventParamDto;
 import ru.ewm.event.dto.EventShortDto;
+import ru.ewm.event.mapper.EventContext;
 import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
 import ru.ewm.event.repository.EventRepository;
@@ -42,10 +43,12 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         statsService.addView(request);
 
-        Map<Long, Long> requests = statsService.getConfirmedRequests(List.of(id));
+        //TODO: нужно считать УНИКАЛЬНЫЕ просмотры, а не все
+        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(List.of(id));
         Map<Long, Long> views = statsService.getViews(List.of(id));
 
-        var dto = eventMapper.toDto(event, views, requests);
+        EventContext context = new EventContext(confirmedRequests, views);
+        var dto = eventMapper.toDto(event, context);
 
         return dto;
     }
@@ -70,11 +73,11 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         statsService.addView(request);
 
-        Map<Long, Long> requests = statsService.getConfirmedRequests(ids);
+        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(ids);
 
         if (paramDto.isOnlyAvailable()) {
             events = events.stream()
-                    .filter(event -> requests.get(event.getId()) < event.getParticipantLimit())
+                    .filter(event -> confirmedRequests.get(event.getId()) < event.getParticipantLimit())
                     .toList();
         }
 
@@ -84,8 +87,10 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         Map<Long, Long> views = statsService.getViews(ids);
 
+        //TODO: преобразовать в отдельный метод в StatsService (?)
+        EventContext context = new EventContext(confirmedRequests, views);
         List<EventShortDto> dtos = events.stream()
-                .map(event -> eventMapper.toShortDto(event, views, requests))
+                .map(event -> eventMapper.toShortDto(event, context))
                 .toList();
 
         return dtos;

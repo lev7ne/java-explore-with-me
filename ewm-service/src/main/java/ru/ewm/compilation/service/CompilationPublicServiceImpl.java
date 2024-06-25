@@ -43,7 +43,7 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
 
         List<CompilationDto> dtos = compilations.stream()
                 .map(compilation -> {
-                    List<Long> eventIds = compilation.getEvents().stream()
+                    List<Long> ids = compilation.getEvents().stream()
                             .map(Event::getId)
                             .toList();
 
@@ -51,6 +51,7 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
 //                    Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
 
                     List<EventShortDto> eventShortDtos = compilation.getEvents().stream()
+                            //TODO: заменить маппером с просмотрами
                             .map(eventMapper::toShortDto)
                             .peek(eventShortDto -> {
 //                                eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));

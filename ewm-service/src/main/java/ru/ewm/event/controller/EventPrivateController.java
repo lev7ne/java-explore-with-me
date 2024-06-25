@@ -3,6 +3,7 @@ package ru.ewm.event.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import ru.ewm.request.dto.RequestUpdateDto;
 import java.util.List;
 
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/users/{userId}/events")
 @RequiredArgsConstructor
@@ -40,7 +42,7 @@ public class EventPrivateController {
                                          @PathVariable long eventId) {
 
         //TODO: т.к. для получения сущности event не требуется userId,
-        // в метод дальше его не прокидываем, параметр понадобиться позже в Security
+        // в метод дальше его не передаём, параметр понадобиться позже в Security
 
         var dto = eventPrivateService.show(eventId);
 
@@ -49,14 +51,14 @@ public class EventPrivateController {
     }
 
     @PatchMapping(value = "/{eventId}")
-    public ResponseEntity<EventDto> update(@Valid @RequestBody EventUpdateUserDto eventUpdateUserDto,
+    public ResponseEntity<EventDto> update(@Valid @RequestBody EventUpdateUserDto userDto,
                                            @PathVariable long userId,
                                            @PathVariable long eventId) {
 
         //TODO: т.к. для обновления сущности event не требуется userId,
-        // в метод дальше его не прокидываем, параметр понадобиться позже в Security
+        // в метод дальше его не передаём, параметр понадобиться позже в Security
 
-        var dto = eventPrivateService.update(eventUpdateUserDto, eventId);
+        var dto = eventPrivateService.update(userDto, eventId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(dto);
@@ -84,12 +86,18 @@ public class EventPrivateController {
                 .body(dtos);
     }
 
-    @PatchMapping(value = "/{eventId}/requests")
-    public ResponseEntity<RequestDto> update(@RequestBody RequestUpdateDto updateDto,
-                                             @PathVariable long userId,
-                                             @PathVariable long eventId) {
+    @PatchMapping(value = {"/{eventId}/requests", "/{eventId}/requests/"})
+    public ResponseEntity<RequestDto> update(@PathVariable long userId,
+                                             @PathVariable long eventId,
+                                             @RequestBody RequestUpdateDto updateDto) {
 
-        var dto = eventPrivateService.update(updateDto, userId, eventId);
+        log.info("Получен PATCH-запрос обновления списка событий: " +
+                "userId={}, eventId={}, requestUpdateDto={}", userId, eventId, updateDto);
+
+        //TODO: т.к. для обновления сущности event не требуется userId,
+        // в метод дальше его не передаём, параметр понадобиться позже в Security
+
+        var dto = eventPrivateService.updateStatusRequests(updateDto, eventId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(dto);

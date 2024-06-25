@@ -35,9 +35,9 @@ public interface EndpointHitRepository extends JpaRepository<EndpointHit, Long> 
 //            "hits.app, hits.uri, " +
 //            "CASE WHEN ?4 = true THEN COUNT(distinct hits.ip) ELSE COUNT(hits.ip) END) " +
 //            "from EndpointHit hits " +
-//            "where (?1 is null or hits.timestamp >= ?1) " +
+//            "where (?3 is null or hits.uri in ?3) " +
+//            "and (?1 is null or hits.timestamp >= ?1) " +
 //            "and (?2 is null or hits.timestamp <= ?2) " +
-//            "and (?3 is null or hits.uri in ?3) " +
 //            "group by hits.app, hits.uri " +
 //            "order by CASE WHEN ?4 = true THEN COUNT(distinct hits.ip) ELSE COUNT(hits.ip) END desc")
 //    List<ViewStats> readViewStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique);

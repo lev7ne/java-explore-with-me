@@ -3,15 +3,26 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>stats-client</artifactId>
+
     <parent>
         <groupId>ru</groupId>
         <artifactId>ewm-stats</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>stats-client</artifactId>
+    <properties>
+        <org.apache.httpcomponents>4.5.14</org.apache.httpcomponents>
+    </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>ru</groupId>
+            <artifactId>stats-dto</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
@@ -21,22 +32,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>3.3.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
+            <version>${org.apache.httpcomponents}</version>
         </dependency>
 
         <dependency>
-            <groupId>ru</groupId>
-            <artifactId>stats-dto</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${org.projectlombok}</version>
         </dependency>
-
     </dependencies>
 
 </project>
