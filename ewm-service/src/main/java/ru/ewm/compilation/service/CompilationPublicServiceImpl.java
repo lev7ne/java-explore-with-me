@@ -9,8 +9,10 @@ import ru.ewm.compilation.mapper.CompilationMapper;
 import ru.ewm.compilation.model.Compilation;
 import ru.ewm.compilation.repository.CompilationRepository;
 import ru.ewm.event.dto.EventShortDto;
+import ru.ewm.event.mapper.EventContext;
 import ru.ewm.event.mapper.EventMapper;
 import ru.ewm.event.model.Event;
+import ru.ewm.stat.service.StatsService;
 import ru.ewm.util.exception.NotFoundException;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CompilationPublicServiceImpl implements CompilationPublicService {
     private final CompilationRepository compilationRepository;
+    private final StatsService statsService;
     private final EventMapper eventMapper;
     private final CompilationMapper compilationMapper;
 
@@ -29,13 +32,10 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
     @Override
     @Transactional(readOnly = true)
     public List<CompilationDto> index(boolean pinned, Pageable pageable) {
-        List<Compilation> compilations;
 
-        if (pinned) {
-            compilations = compilationRepository.getAllByPinned(pinned, pageable);
-        } else {
-            compilations = compilationRepository.findAll(pageable).getContent();
-        }
+        List<Compilation> compilations = pinned
+                ? compilationRepository.findAllByPinned(pinned, pageable)
+                : compilationRepository.findAll(pageable).getContent();
 
         if (compilations.isEmpty()) {
             return List.of();
@@ -43,23 +43,19 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
 
         List<CompilationDto> dtos = compilations.stream()
                 .map(compilation -> {
+                    // Предварительная выборка идентификаторов событий
                     List<Long> ids = compilation.getEvents().stream()
                             .map(Event::getId)
                             .toList();
+                    EventContext context = statsService.createEventContext(ids);
 
-//                    Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
-//                    Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
-
+                    // Маппинг событий и подборок
                     List<EventShortDto> eventShortDtos = compilation.getEvents().stream()
-                            //TODO: заменить маппером с просмотрами
-                            .map(eventMapper::toShortDto)
-                            .peek(eventShortDto -> {
-//                                eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
-//                                eventShortDto.setViews(countViews.get(eventShortDto.getId()));
-                            })
+                            .map(event -> eventMapper.toShortDto(event, context))
                             .toList();
                     CompilationDto compilationDto = compilationMapper.toDto(compilation);
                     compilationDto.setEvents(eventShortDtos);
+
                     return compilationDto;
                 })
                 .toList();
@@ -76,24 +72,18 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
         var compilation = compilationRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Compilation with id=" + id + " was not found"));
 
-        List<Long> eventIds = compilation.getEvents().stream()
+        List<Long> ids = compilation.getEvents().stream()
                 .map(Event::getId)
                 .toList();
 
-//        Map<Long, Long> confirmedRequests = ObjectCounter.countConfirmedRequestByIds(eventIds, requestRepository);
-//        Map<Long, Long> countViews = ObjectCounter.countViewsByIds(eventIds, statsClient);
-
+        EventContext context = statsService.createEventContext(ids);
         var dto = compilationMapper.toDto(compilation);
 
         List<EventShortDto> eventShortDtos = compilation.getEvents().stream()
-                .map(eventMapper::toShortDto)
-                .peek(eventShortDto -> {
-//                    eventShortDto.setConfirmedRequests(confirmedRequests.get(eventShortDto.getId()));
-//                    eventShortDto.setViews(countViews.get(eventShortDto.getId()));
-                })
+                .map(event -> eventMapper.toShortDto(event, context))
                 .toList();
 
-//        dto.setEvents(eventShortDtos);
+        dto.setEvents(eventShortDtos);
 
         return dto;
     }

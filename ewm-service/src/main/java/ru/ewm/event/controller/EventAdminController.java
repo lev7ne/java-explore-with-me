@@ -39,7 +39,7 @@ public class EventAdminController {
             @RequestParam(defaultValue = "10") @Min(1) int size
     ) {
 
-        log.info("Получен GET-запрос поиска с параметрами: " +
+        log.info("Получен GET-запрос (/admin) поиска с параметрами: " +
                         "users={}, categories={}, rangeStart={}, rangeEnd={}, states={}, from={}, size={}",
                 users, categories, rangeStart, rangeEnd, states, from, size);
 
@@ -63,7 +63,7 @@ public class EventAdminController {
     public ResponseEntity<EventDto> update(@Valid @RequestBody EventUpdateAdminDto updateDto,
                                            @PathVariable long id) {
 
-        log.info("Получен PATCH-запрос на обновление события администратором: " +
+        log.info("Получен PATCH-запрос (/admin) на обновление события администратором: " +
                 "eventId={}, eventUpdateAdminDto={}", id, updateDto);
 
         var dto = eventAdminService.update(id, updateDto);

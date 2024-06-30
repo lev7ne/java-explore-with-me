@@ -12,6 +12,7 @@ import ru.ewm.model.EndpointHit;
         componentModel = MappingConstants.ComponentModel.SPRING
 )
 public abstract class EndpointHitMapper {
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "timestamp", ignore = true)
     public abstract EndpointHit toEntity(EndpointHitCreateDto dto);
 

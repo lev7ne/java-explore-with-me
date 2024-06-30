@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.ewm.StatsClient;
 import ru.ewm.dto.EndpointHitCreateDto;
 import ru.ewm.dto.ViewStats;
+import ru.ewm.event.mapper.EventContext;
 import ru.ewm.request.model.Request;
 import ru.ewm.request.repository.RequestRepository;
 
@@ -41,6 +42,18 @@ public class StatsServiceImpl implements StatsService {
      */
     @Override
     @Transactional(readOnly = true)
+    public EventContext createEventContext(List<Long> ids) {
+        Map<Long, Long> confirmedRequests = getConfirmedRequests(ids);
+        Map<Long, Long> views = getViews(ids);
+
+        return new EventContext(confirmedRequests, views);
+    }
+
+    /**
+     *
+     */
+    @Override
+    @Transactional(readOnly = true)
     public Map<Long, Long> getViews(List<Long> ids) {
         List<String> uris = ids.stream()
                 .map(id -> "/events/" + id)
@@ -63,6 +76,7 @@ public class StatsServiceImpl implements StatsService {
      *
      */
     @Override
+    @Transactional(readOnly = true)
     public Map<Long, Long> getConfirmedRequests(List<Long> ids) {
         List<Request> confirmedRequests = requestRepository
                 .findAllByRequestStatusAndEventIdIn(Request.RequestStatus.CONFIRMED, ids);

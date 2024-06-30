@@ -43,11 +43,7 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         statsService.addView(request);
 
-        //TODO: нужно считать УНИКАЛЬНЫЕ просмотры, а не все
-        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(List.of(id));
-        Map<Long, Long> views = statsService.getViews(List.of(id));
-
-        EventContext context = new EventContext(confirmedRequests, views);
+        EventContext context = statsService.createEventContext(List.of(id));
         var dto = eventMapper.toDto(event, context);
 
         return dto;
@@ -87,7 +83,6 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         Map<Long, Long> views = statsService.getViews(ids);
 
-        //TODO: преобразовать в отдельный метод в StatsService (?)
         EventContext context = new EventContext(confirmedRequests, views);
         List<EventShortDto> dtos = events.stream()
                 .map(event -> eventMapper.toShortDto(event, context))

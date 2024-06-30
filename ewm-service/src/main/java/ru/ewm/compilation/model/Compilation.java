@@ -1,7 +1,10 @@
 package ru.ewm.compilation.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.ewm.event.model.Event;
 
 import java.util.List;
@@ -19,7 +22,6 @@ public class Compilation {
     private long id;
     private String title;
     private boolean pinned;
-    @With
     @ManyToMany
     @JoinTable(name = "events_compilations",
             joinColumns = @JoinColumn(name = "compilation_id"),

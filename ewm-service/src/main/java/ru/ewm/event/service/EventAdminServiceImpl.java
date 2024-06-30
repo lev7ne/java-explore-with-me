@@ -19,7 +19,6 @@ import ru.ewm.util.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -72,11 +71,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         eventMapper.update(updateDto, event);
         event = eventRepository.save(event);
 
-        //TODO: преобразовать в отдельный метод в StatsService
-        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(List.of(id));
-        Map<Long, Long> views = statsService.getViews(List.of(id));
-
-        EventContext context = new EventContext(confirmedRequests, views);
+        EventContext context = statsService.createEventContext(List.of(id));
         var dto = eventMapper.toDto(event, context);
 
         return dto;
@@ -99,11 +94,7 @@ public class EventAdminServiceImpl implements EventAdminService {
                 .map(Event::getId)
                 .toList();
 
-        //TODO: преобразовать в отдельный метод в StatsService
-        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(ids);
-        Map<Long, Long> views = statsService.getViews(ids);
-
-        EventContext context = new EventContext(confirmedRequests, views);
+        EventContext context = statsService.createEventContext(ids);
         List<EventDto> dtos = events.stream()
                 .map(event -> eventMapper.toDto(event, context))
                 .toList();

@@ -43,29 +43,28 @@ public class EventPublicController {
     public ResponseEntity<List<EventShortDto>> index(
             @RequestParam(required = false) String text,
             @RequestParam(required = false) List<Long> categories,
-            @RequestParam(required = false) boolean paid,
+            @RequestParam(required = false) Boolean paid,
             @RequestParam(required = false) @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeStart,
             @RequestParam(required = false) @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeEnd,
-            @RequestParam(defaultValue = "false") boolean onlyAvailable,
+            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
             @RequestParam(required = false) Event.Sort sort,
             @RequestParam(defaultValue = "0") @Min(0) int from,
-
-            //FIXME: Значение size по-умолчанию должно быть равным 10 - работает некорректно, понять почему?
             @RequestParam(defaultValue = "10") @Min(1) int size,
             HttpServletRequest request
     ) {
 
         Pageable pageable;
+        Sort sortOrder = Sort.unsorted();
 
         if (sort != null) {
-            pageable = switch (sort) {
-                case EVENT_DATE -> PageRequest.of(from / size, size, Sort.by("eventDate"));
-                case VIEWS -> PageRequest.of(from / size, size, Sort.by("views"));
+            sortOrder = switch (sort) {
+                case EVENT_DATE -> Sort.by("eventDate");
+                case VIEWS -> Sort.by("views");
                 default -> throw new InvalidRequestException("Incorrect sorting");
             };
-        } else {
-            pageable = PageRequest.of(from / size, size);
         }
+
+        pageable = PageRequest.of(from / size, size, sortOrder);
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new InvalidRequestException("The dates of the range are specified incorrectly");
