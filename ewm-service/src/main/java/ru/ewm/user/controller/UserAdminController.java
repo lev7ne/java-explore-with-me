@@ -26,7 +26,7 @@ public class UserAdminController {
     public ResponseEntity<UserDto> create(@Valid @RequestBody UserCreateDto createDto) {
         var dto = userAdminService.create(createDto);
 
-        log.info("Создание пользователя: createDto={}", createDto);
+        log.info("Получен POST-запрос /admin/users/{id} на создание пользователя: createDto={}", createDto);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -37,8 +37,8 @@ public class UserAdminController {
                                                @RequestParam(defaultValue = "0") @Min(0) int from,
                                                @RequestParam(defaultValue = "10") @Min(1) int size) {
 
-        log.info("Получение всех пользователей из списка идентификаторов (с пагинацией):" +
-                "ids={}, from={}, size={}", ids, from, size);
+        log.info("Получен GET-запрос /admin/users на получение всех пользователей с идентификаторами: " +
+                "ids={}, from={}, page={}", ids, from, size);
 
         var pageable = PageRequest.of(from / size, size);
         List<UserDto> dtos = userAdminService.index(ids, pageable);
@@ -51,7 +51,7 @@ public class UserAdminController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable long id) {
 
-        log.info("Удаление пользователя по идентификатору: id={}", id);
+        log.info("Получен DELETE-запрос /admin/users/{id} на удаление пользователя: id={}", id);
 
         userAdminService.delete(id);
     }

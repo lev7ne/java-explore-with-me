@@ -16,9 +16,9 @@ public class EventParamDto {
     private String text;
     private List<Long> users;
     private List<Long> categories;
-    private boolean paid;
+    private Boolean paid;
     private LocalDateTime rangeStart;
     private LocalDateTime rangeEnd;
     private List<Event.State> states;
-    private boolean onlyAvailable;
+    private Boolean onlyAvailable;
 }

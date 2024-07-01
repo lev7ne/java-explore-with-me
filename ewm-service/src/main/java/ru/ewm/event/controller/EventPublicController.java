@@ -3,6 +3,7 @@ package ru.ewm.event.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,6 +24,7 @@ import java.util.List;
 import static ru.ewm.util.configuration.JacksonConfig.DATE_TIME_FORMAT;
 
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/events")
 @RequiredArgsConstructor
@@ -52,6 +54,11 @@ public class EventPublicController {
             @RequestParam(defaultValue = "10") @Min(1) int size,
             HttpServletRequest request
     ) {
+
+        log.info("Получен GET-запрос (public) поиска с параметрами: " +
+                        "text={}, categories={}, paid={}, rangeStart={}, " +
+                        "rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
+                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
         Pageable pageable;
         Sort sortOrder = Sort.unsorted();

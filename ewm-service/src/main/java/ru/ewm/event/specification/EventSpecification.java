@@ -15,9 +15,8 @@ public class EventSpecification {
         return withTextInAnnotationOrDescription(params.getText())
                 .and(withInitiatorId(params.getUsers()))
                 .and(withCategories(params.getCategories()))
-                .and(withPaid(params.isPaid()))
-                .and(withRangeStartGt(params.getRangeStart()))
-                .and(withRangeEndLt(params.getRangeEnd()))
+                .and(withPaid(params.getPaid()))
+                .and(withRangeStartAndRangeEnd(params.getRangeStart(), params.getRangeEnd()))
                 .and(withEventState(params.getStates()));
     }
 
@@ -49,14 +48,9 @@ public class EventSpecification {
                 cb.equal(root.get("paid"), paid);
     }
 
-    private Specification<Event> withRangeStartGt(LocalDateTime rangeStartGt) {
-        return (root, query, cb) -> rangeStartGt == null ? cb.conjunction() :
-                cb.greaterThan(root.get("eventDate"), rangeStartGt);
-    }
-
-    private Specification<Event> withRangeEndLt(LocalDateTime rangeEndLt) {
-        return (root, query, cb) -> rangeEndLt == null ? cb.conjunction() :
-                cb.lessThan(root.get("eventDate"), rangeEndLt);
+    private Specification<Event> withRangeStartAndRangeEnd(LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        return (root, query, cb) -> rangeStart == null && rangeEnd == null ? cb.conjunction() :
+                cb.between(root.get("eventDate"), rangeStart, rangeEnd);
     }
 
 

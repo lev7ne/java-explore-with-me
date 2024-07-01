@@ -1,7 +1,6 @@
 package ru.ewm.event.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventPrivateServiceImpl implements EventPrivateService {
@@ -145,7 +143,6 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     @Override
     @Transactional
     public RequestDto updateStatusRequests(RequestUpdateDto updateDto, long id) {
-        log.info("Поиск события по id={}", id);
         var event = eventRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Event with id=" + id + " was not found"));
 

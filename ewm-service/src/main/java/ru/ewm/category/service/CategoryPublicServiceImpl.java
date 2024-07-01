@@ -20,8 +20,8 @@ public class CategoryPublicServiceImpl implements CategoryPublicService {
     private final CategoryMapper categoryMapper;
 
     /**
-     * Возвращает информацию обо всех категориях с параметром ограничения выборки.
-     * В случае, если не найдено ни одной категории, возвращает пустой список.
+     * Возвращает информацию обо всех категориях с параметром ограничения выборки,
+     * если не найдено ни одной категории, возвращает пустой список.
      *
      * @param pageable - параметры ограничения выборки
      * @return List<CategoryDto> - список DTO возвращаемых пользователю
@@ -43,10 +43,10 @@ public class CategoryPublicServiceImpl implements CategoryPublicService {
     }
 
     /**
-     * Возвращает конкретную категорию по идентификатору (id).
+     * Возвращает категорию по идентификатору.
      *
      * @param id - указанные идентификаторы пользователей
-     * @return CategoryDto - DTO возвращаемый пользователю
+     * @return CategoryDto - DTO, возвращаемый пользователю
      * @throws NotFoundException если не удалось найти категорию по полученному идентификатору
      */
     @Override

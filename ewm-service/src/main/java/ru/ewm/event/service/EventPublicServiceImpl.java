@@ -71,7 +71,7 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(ids);
 
-        if (paramDto.isOnlyAvailable()) {
+        if (paramDto.getOnlyAvailable()) {
             events = events.stream()
                     .filter(event -> confirmedRequests.get(event.getId()) < event.getParticipantLimit())
                     .toList();

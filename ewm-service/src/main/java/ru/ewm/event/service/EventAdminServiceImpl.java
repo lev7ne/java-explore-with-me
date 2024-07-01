@@ -1,7 +1,6 @@
 package ru.ewm.event.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +19,7 @@ import ru.ewm.util.exception.ValidationException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Slf4j
+
 @Service
 @RequiredArgsConstructor
 public class EventAdminServiceImpl implements EventAdminService {
@@ -48,24 +47,18 @@ public class EventAdminServiceImpl implements EventAdminService {
                     throw new ValidationException("Cannot publish or reject the event because it's not " +
                             "in the right state: " + event.getState());
                 case PENDING:
-                    log.info("case action={}", action);
                     switch (action) {
                         case PUBLISH_EVENT:
-                            log.info("case action={}", action);
                             event.setState(Event.State.PUBLISHED);
                             event.setPublishedOn(LocalDateTime.now());
                             break;
                         case REJECT_EVENT:
-                            log.info("case action={}", action);
                             event.setState(Event.State.CANCELED);
                             break;
                         default:
-                            log.info("case State.Action: default");
                     }
                 default:
-                    log.info("case Action: default");
             }
-            log.info("После прохождения всех switch-case.");
         }
 
         eventMapper.update(updateDto, event);

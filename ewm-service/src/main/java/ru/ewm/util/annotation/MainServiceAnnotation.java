@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 public class MainServiceAnnotation {
     /**
      * Кастомная аннотация NoEarlierThan2HoursBefore используется для валидации поля eventDate
-     * в EventCreateDto и EventUpdateDto приходящих от пользователя.
+     * в EventCreateDto и EventUpdateDto приходящих от пользователя/администратора.
      * <p>
      * Невозможно создать событие, поскольку дата события не может быть раньше, чем через 2 часа после текущего момента.
      */

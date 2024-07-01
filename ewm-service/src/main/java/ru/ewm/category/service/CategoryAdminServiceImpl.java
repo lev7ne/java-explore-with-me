@@ -26,8 +26,8 @@ public class CategoryAdminServiceImpl implements CategoryAdminService {
     /**
      * Создание и добавление новой категории в репозиторий (БД).
      *
-     * @param createDto - DTO для создания новоой категории)
-     * @return CategoryDto - DTO возвращаемый пользователю)
+     * @param createDto - DTO для создания новой категории
+     * @return CategoryDto - DTO, возвращаемый пользователю
      */
     @Override
     @Transactional
@@ -43,7 +43,7 @@ public class CategoryAdminServiceImpl implements CategoryAdminService {
      *
      * @param updateDto - DTO для обновления категории
      * @param id        - идентификатор обновляемой категории
-     * @return UserDto - DTO возвращаемый пользователю
+     * @return UserDto - DTO, возвращаемый пользователю
      * @throws NotFoundException если не удалось найти категорию по полученному идентификатору
      */
     @Override
